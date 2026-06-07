@@ -34,7 +34,6 @@ export const FINISH_LOOK: Record<string, FinishLook> = {
 };
 
 export type CooktopKind = "standard" | "pro" | "grill";
-export type MobilityKind = "casters" | "road" | "offroad";
 export type Grade = "std" | "prem" | "pro";
 
 export interface CartParams {
@@ -46,7 +45,6 @@ export interface CartParams {
   cooktopGrade: Grade;
   fridgeDrawers: number; // 0,1,2
   cooler: boolean;
-  mobility: MobilityKind;
   lid: boolean;
   windGuard: boolean;
   led: boolean;
@@ -91,10 +89,6 @@ export function cartParams(
   const fridgeDrawers = fridgeId === "fridge-dual" ? 2 : fridgeId === "fridge-single" ? 1 : 0;
   const cooler = fridgeId === "fridge-cooler";
 
-  const mobilityId = (sel["mobility"] ?? ["mobility-casters"])[0];
-  const mobility: MobilityKind =
-    mobilityId === "mobility-road" ? "road" : mobilityId === "mobility-offroad" ? "offroad" : "casters";
-
   return {
     woodHex: darkenHex(wood.hex, finish.darken),
     finishRoughness: finish.roughness,
@@ -104,7 +98,6 @@ export function cartParams(
     cooktopGrade,
     fridgeDrawers,
     cooler,
-    mobility,
     lid: has(sel, "weather", "weather-lid"),
     windGuard: has(sel, "weather", "weather-windguard"),
     led: has(sel, "power", "power-led"),

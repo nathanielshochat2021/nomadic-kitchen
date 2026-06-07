@@ -17,7 +17,7 @@ const PILLARS = [
   {
     n: "03",
     title: "Patio to trailhead",
-    body: "Locking casters, or a road / off-road trailer for everywhere else.",
+    body: "Rolls on its own wheels, tows lengthwise, and drops hydraulic legs to sit level anywhere.",
   },
 ];
 

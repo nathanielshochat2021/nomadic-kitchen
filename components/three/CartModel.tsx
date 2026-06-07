@@ -155,8 +155,7 @@ export default function CartModel({ params: p, mode }: { params: CartParams; mod
       ? [-1.42, -1.05]
       : [-1.4, -0.95, -0.5];
 
-  const offroad = p.mobility === "offroad";
-  const wheelR = offroad ? 0.44 : 0.34;
+  const wheelR = 0.34;
   const baseY = mode === "parked" ? 0.18 : 0;
   const wheelZ = 0.64;
   const wheelY = -0.78;
@@ -348,8 +347,8 @@ export default function CartModel({ params: p, mode }: { params: CartParams; mod
         <cylinderGeometry args={[0.05, 0.05, 2 * wheelZ, 14]} />
         <meshStandardMaterial color={FRAME} metalness={0.6} roughness={0.5} />
       </mesh>
-      <Wheel z={wheelZ} y={wheelY} radius={wheelR} knobby={offroad} />
-      <Wheel z={-wheelZ} y={wheelY} radius={wheelR} knobby={offroad} />
+      <Wheel z={wheelZ} y={wheelY} radius={wheelR} knobby={false} />
+      <Wheel z={-wheelZ} y={wheelY} radius={wheelR} knobby={false} />
 
       {/* hydraulic legs at the four corners */}
       {([

@@ -20,7 +20,7 @@ export const BASE_INCLUDES: string[] = [
   "Stainless 3-burner cooktop",
   "Stainless prep counter + sink",
   "Lower prep shelf",
-  "Locking casters",
+  "Single-axle chassis — long-side wheels + hydraulic leveling legs",
   "Natural matte protective seal",
 ];
 
@@ -138,17 +138,6 @@ export const GROUPS: ConfigGroup[] = [
     ],
   },
   {
-    id: "mobility",
-    name: "Mobility & towing",
-    type: "single",
-    description: "Roll it across the patio, or tow it anywhere.",
-    options: [
-      { id: "mobility-casters", label: "Locking casters", price: 0, description: "Heavy-duty locking casters — the base build." },
-      { id: "mobility-road", label: "Single-axle road trailer", price: 2200, description: "Registerable single-axle trailer." },
-      { id: "mobility-offroad", label: "Off-road trailer package", price: 3400, description: "Lifted off-road trailer for overlanding." },
-    ],
-  },
-  {
     id: "weather",
     name: "Weather protection",
     type: "multi",
@@ -223,7 +212,6 @@ export const PRESETS: Preset[] = [
       refrigeration: ["fridge-single"],
       wood: ["wood-cedar"],
       finish: ["finish-oil"],
-      mobility: ["mobility-offroad"],
       weather: ["weather-cover"],
       power: ["power-led", "power-solar"],
       water: ["water-pressurized"],
@@ -242,7 +230,6 @@ export const PRESETS: Preset[] = [
       refrigeration: ["fridge-dual"],
       wood: ["wood-oak"],
       finish: ["finish-stain"],
-      mobility: ["mobility-casters"],
       weather: ["weather-lid", "weather-windguard"],
       power: ["power-led", "power-shore"],
       water: ["water-pressurized", "water-hot"],
@@ -261,7 +248,6 @@ export const PRESETS: Preset[] = [
       refrigeration: ["fridge-single"],
       wood: ["wood-cedar"],
       finish: ["finish-matte"],
-      mobility: ["mobility-road"],
       weather: ["weather-cover"],
       power: ["power-led"],
       water: [],

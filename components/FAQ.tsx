@@ -19,8 +19,8 @@ const FAQS = [
     a: "A 50% deposit reserves your build slot, locks your configuration and lets us order materials. The remaining balance is due on completion, before delivery or pickup.",
   },
   {
-    q: "Can I tow it off-road?",
-    a: "Yes — choose the off-road trailer package in the configurator (you’ll see it lift in the 3D preview). For pavement and registration, the single-axle road trailer is the way to go. Patio-only? Locking casters are included in the base build.",
+    q: "How does it move and park?",
+    a: "Every cart rides on its own single-axle wheels (on the long sides) and tows lengthwise behind your vehicle. When you arrive, hydraulic legs drop to lift it off the wheels and sit it dead level — even on uneven ground. Toggle Parked / Travel in the 3D preview to see it.",
   },
   {
     q: "Can it run off-grid?",
