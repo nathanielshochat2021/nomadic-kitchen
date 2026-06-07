@@ -58,4 +58,4 @@ export function Stamp({
   return <span className={`stamp ${className}`}>{children}</span>;
 }
 
-export const SITE_COORD = "44.21°N / 72.58°W";
+export const SITE_COORD = "Bridgewater, VT";

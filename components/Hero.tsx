@@ -34,7 +34,7 @@ export default function Hero() {
           className="mb-5 flex items-center gap-3 text-paper/80"
         >
           <span className="h-px w-10 bg-ember" />
-          <Stamp className="text-ember-soft">Built to order · No. 001</Stamp>
+          <Stamp className="text-ember-soft">Built to order</Stamp>
         </motion.div>
 
         <h1 className="max-w-4xl font-display text-[3rem] leading-[1.0] text-paper sm:text-8xl md:text-[6rem]">
@@ -62,7 +62,8 @@ export default function Hero() {
           transition={{ duration: 0.7, ease, delay: 0.44 }}
           className="mt-6 max-w-md text-base text-paper/85 sm:text-lg"
         >
-          A wood-clad outdoor kitchen, built to order — and configured to you.
+          Solid wood, stainless, and off-grid-ready — built to order and
+          configured entirely to you. Park it on the patio or tow it past the trailhead.
         </motion.p>
 
         <motion.div

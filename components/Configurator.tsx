@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import dynamic from "next/dynamic";
+import type { ViewMode } from "@/components/three/CartModel";
 import { useBuild } from "@/components/BuildProvider";
 import {
   BASE_PRICE,
@@ -47,6 +48,7 @@ export default function Configurator() {
     reset,
   } = useBuild();
 
+  const [mode, setMode] = useState<ViewMode>("parked");
   const params = useMemo(() => cartParams(selection, tiers, engraving), [selection, tiers, engraving]);
   const lines = summaryLines(selection, tiers);
   const addOnCount = lines.filter((l) => l.price > 0).length;
@@ -96,7 +98,7 @@ export default function Configurator() {
           {/* ── 3D viewer (sticky) ─────────────────────────── */}
           <div className="lg:sticky lg:top-24 lg:self-start">
             <div className="relative h-[400px] overflow-hidden rounded-3xl border border-white/10 bg-[radial-gradient(120%_120%_at_50%_15%,#2b362b,#161c16_70%)] sm:h-[500px] lg:h-[560px]">
-              <CartViewer params={params} />
+              <CartViewer params={params} mode={mode} />
               <div className="pointer-events-none absolute inset-0">
                 <div className="absolute left-4 top-4 flex items-center gap-2 rounded-full bg-night/50 px-3 py-1.5 backdrop-blur-sm">
                   <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-ember" />
@@ -106,6 +108,20 @@ export default function Configurator() {
                   <Crosshair className="h-4 w-4" />
                   <Stamp>Drag to rotate</Stamp>
                 </div>
+              </div>
+              {/* Travel / Parked toggle */}
+              <div className="absolute left-1/2 top-4 flex -translate-x-1/2 gap-0.5 rounded-full border border-white/15 bg-night/55 p-0.5 backdrop-blur-sm">
+                {(["parked", "travel"] as const).map((m) => (
+                  <button
+                    key={m}
+                    onClick={() => setMode(m)}
+                    className={`rounded-full px-3.5 py-1 text-xs font-medium transition-colors ${
+                      mode === m ? "bg-ember text-white" : "text-paper/70 hover:text-paper"
+                    }`}
+                  >
+                    {m === "parked" ? "Parked · legs" : "Travel · wheels"}
+                  </button>
+                ))}
               </div>
               <div className="pointer-events-none absolute inset-x-3 bottom-3">
                 <div className="pointer-events-auto flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-night/70 px-4 py-3 backdrop-blur-md">
