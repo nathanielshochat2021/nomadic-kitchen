@@ -1,0 +1,51 @@
+@import "tailwindcss";
+
+/* ── Nomadic Kitchen design tokens ──────────────────────────────────────── */
+@theme {
+  --color-canvas: #f4efe6;
+  --color-paper: #fbf9f4;
+  --color-ink: #1b1915;
+  --color-charcoal: #2a2620;
+  --color-stone: #6c6358;
+  --color-mist: #9a9286;
+  --color-line: #e2dacc;
+  --color-wood: #b07a4a;
+  --color-wood-deep: #8a5c34;
+  --color-forest: #39433a;
+  --color-forest-deep: #2a322b;
+
+  --font-display: var(--font-fraunces);
+  --font-sans: var(--font-inter);
+}
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Respect users who prefer reduced motion. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display), Georgia, serif;
+}
+
+/* Thin, editorial section rule. */
+.hairline {
+  border-color: var(--color-line);
+}
