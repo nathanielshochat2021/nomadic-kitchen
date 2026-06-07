@@ -1,78 +1,104 @@
 import Image from "next/image";
 import { BASE_INCLUDES, BASE_PRICE, formatPrice } from "@/lib/configurator";
+import { Reveal, Stagger, StaggerItem } from "@/components/motion/Reveal";
+import { Stamp } from "@/components/decor/Decor";
 
 const PILLARS = [
   {
+    n: "01",
     title: "Hand-built in solid wood",
-    body: "Each cart is joined and clad by hand in solid wood — not a flat-pack, not a wrap. Built one at a time, to last decades outdoors.",
+    body: "Joined and clad by hand — not flat-pack, not a vinyl wrap. One at a time, to weather decades in the open.",
   },
   {
+    n: "02",
     title: "A real kitchen, not a gimmick",
-    body: "Stainless cooktop, prep counter, sink and storage in a footprint that actually works. Cook for two or for a crowd.",
+    body: "Stainless cooktop, prep counter, sink and storage in a footprint that actually cooks. For two, or for the whole camp.",
   },
   {
-    title: "Built around how you live",
-    body: "Casters for the patio or a road / off-road trailer for everywhere else. Configure power, water, refrigeration and finish to match.",
+    n: "03",
+    title: "Patio to trailhead",
+    body: "Locking casters for the terrace, or a road / off-road trailer for everywhere the map runs out.",
   },
 ];
 
 export default function Feature() {
   return (
-    <section id="features" className="bg-paper py-20 sm:py-28">
-      <div className="mx-auto max-w-6xl px-5 sm:px-8">
+    <section id="features" className="relative bg-canvas py-24 sm:py-32">
+      <div className="mx-auto max-w-7xl px-5 sm:px-8">
         <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
-          <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-line">
-            <Image
-              src="/images/cart-front.jpg"
-              alt="Front view of a Nomadic Kitchen cart showing the stainless cooktop, prep area and fridge drawers"
-              fill
-              sizes="(min-width: 1024px) 50vw, 100vw"
-              className="object-cover"
-            />
-          </div>
+          <Reveal>
+            <div className="group relative aspect-[4/3] overflow-hidden rounded-3xl border border-line">
+              <Image
+                src="/images/cart-front.jpg"
+                alt="Front view of a Nomadic Kitchen cart: stainless cooktop, prep area, and fridge drawers in solid wood"
+                fill
+                sizes="(min-width: 1024px) 50vw, 100vw"
+                className="object-cover transition-transform duration-700 group-hover:scale-105"
+              />
+              <div className="absolute left-4 top-4 rounded-full bg-night/70 px-3 py-1.5 backdrop-blur-sm">
+                <Stamp className="text-paper/90">Field unit · solid pine</Stamp>
+              </div>
+            </div>
+          </Reveal>
 
           <div>
-            <p className="mb-3 text-sm uppercase tracking-[0.2em] text-wood-deep">
-              The cart
-            </p>
-            <h2 className="font-display text-3xl leading-tight text-ink sm:text-4xl">
-              One cart. Endlessly yours.
-            </h2>
-            <p className="mt-4 max-w-lg text-stone">
-              Nomadic Kitchen starts from a single, considered base build and
-              becomes exactly what you need through paid add-ons — refrigeration,
-              power, water, towing and finish.
-            </p>
+            <Reveal>
+              <div className="mb-4 flex items-center gap-3 text-wood-deep">
+                <span className="h-px w-10 bg-wood" />
+                <Stamp>The Cart</Stamp>
+              </div>
+              <h2 className="font-display text-4xl leading-tight text-ink sm:text-5xl">
+                One cart.<br />
+                <span className="italic text-wood-deep">Endlessly</span> yours.
+              </h2>
+              <p className="mt-5 max-w-lg text-stone">
+                Nomadic Kitchen begins as a single, considered base build — then
+                becomes exactly what you need through a deep catalog of add-ons:
+                refrigeration, power, water, towing and finish.
+              </p>
+            </Reveal>
 
-            <div className="mt-8 space-y-6">
+            <Stagger className="mt-10 space-y-6">
               {PILLARS.map((p) => (
-                <div key={p.title} className="border-l-2 border-wood pl-4">
-                  <h3 className="font-display text-lg text-ink">{p.title}</h3>
-                  <p className="mt-1 text-sm text-stone">{p.body}</p>
-                </div>
+                <StaggerItem key={p.n}>
+                  <div className="flex gap-5">
+                    <span className="stamp pt-1 text-ember">{p.n}</span>
+                    <div className="border-l border-line pl-5">
+                      <h3 className="font-display text-xl text-ink">{p.title}</h3>
+                      <p className="mt-1.5 text-sm text-stone">{p.body}</p>
+                    </div>
+                  </div>
+                </StaggerItem>
               ))}
-            </div>
+            </Stagger>
           </div>
         </div>
 
-        {/* Base build includes panel */}
-        <div className="mt-14 rounded-2xl border border-line bg-canvas p-7 sm:p-9">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-            <h3 className="font-display text-2xl text-ink">The base build includes</h3>
-            <p className="text-sm text-stone">
-              Starting at{" "}
-              <span className="font-semibold text-ink">{formatPrice(BASE_PRICE)}</span>
-            </p>
+        {/* base build spec sheet */}
+        <Reveal>
+          <div className="mt-16 overflow-hidden rounded-3xl border border-line bg-night text-paper">
+            <div className="flex flex-col gap-2 border-b border-white/10 px-7 py-6 sm:flex-row sm:items-end sm:justify-between sm:px-10">
+              <div>
+                <Stamp className="text-ember-soft">Standard issue</Stamp>
+                <h3 className="mt-2 font-display text-2xl sm:text-3xl">The base build includes</h3>
+              </div>
+              <p className="text-paper/70">
+                Starting at{" "}
+                <span className="font-display text-2xl text-paper">{formatPrice(BASE_PRICE)}</span>
+              </p>
+            </div>
+            <Stagger className="grid gap-px bg-white/10 sm:grid-cols-2 lg:grid-cols-3" gap={0.05}>
+              {BASE_INCLUDES.map((item, i) => (
+                <StaggerItem key={item}>
+                  <div className="flex h-full items-start gap-3 bg-night px-7 py-5 sm:px-10">
+                    <span className="stamp text-ember/80">{String(i + 1).padStart(2, "0")}</span>
+                    <span className="text-sm text-paper/90">{item}</span>
+                  </div>
+                </StaggerItem>
+              ))}
+            </Stagger>
           </div>
-          <ul className="mt-6 grid gap-x-8 gap-y-3 sm:grid-cols-2">
-            {BASE_INCLUDES.map((item) => (
-              <li key={item} className="flex items-start gap-3 text-sm text-charcoal">
-                <span className="mt-1.5 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-wood" />
-                {item}
-              </li>
-            ))}
-          </ul>
-        </div>
+        </Reveal>
       </div>
     </section>
   );

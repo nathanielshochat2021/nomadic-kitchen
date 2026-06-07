@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Fraunces, Inter } from "next/font/google";
+import { Fraunces, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
 const fraunces = Fraunces({
@@ -13,6 +13,13 @@ const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
   display: "swap",
+});
+
+const mono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono-stamp",
+  display: "swap",
+  weight: ["400", "500"],
 });
 
 const SITE_URL = "https://nomadic-kitchen.vercel.app";
@@ -52,8 +59,8 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${fraunces.variable} ${inter.variable}`}>
-      <body>{children}</body>
+    <html lang="en" className={`${fraunces.variable} ${inter.variable} ${mono.variable}`}>
+      <body className="grain">{children}</body>
     </html>
   );
 }

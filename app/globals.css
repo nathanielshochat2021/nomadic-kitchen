@@ -1,51 +1,143 @@
 @import "tailwindcss";
 
-/* ── Nomadic Kitchen design tokens ──────────────────────────────────────── */
+/* ── Nomadic Kitchen — "Premium Expedition" design tokens ─────────────────── */
 @theme {
-  --color-canvas: #f4efe6;
-  --color-paper: #fbf9f4;
-  --color-ink: #1b1915;
-  --color-charcoal: #2a2620;
-  --color-stone: #6c6358;
-  --color-mist: #9a9286;
-  --color-line: #e2dacc;
+  /* Light, warm grounds */
+  --color-canvas: #ece4d3;
+  --color-paper: #f6f1e6;
+  --color-sand: #e0d3ba;
+
+  /* Ink + neutrals */
+  --color-ink: #181a13;
+  --color-charcoal: #24271d;
+  --color-stone: #5f5d4f;
+  --color-mist: #938f7c;
+  --color-line: #d8ccb4;
+
+  /* Dark expedition grounds */
+  --color-night: #11130d;
+  --color-basalt: #1b1e15;
+
+  /* Wood + greens */
   --color-wood: #b07a4a;
-  --color-wood-deep: #8a5c34;
-  --color-forest: #39433a;
-  --color-forest-deep: #2a322b;
+  --color-wood-deep: #875431;
+  --color-olive: #5c6444;
+  --color-olive-deep: #3b4130;
+  --color-forest: #2c372c;
+  --color-forest-deep: #1c241d;
+
+  /* Accents */
+  --color-ember: #d2622e;
+  --color-ember-soft: #e08a4f;
+  --color-brass: #bf9d5f;
 
   --font-display: var(--font-fraunces);
   --font-sans: var(--font-inter);
+  --font-mono: var(--font-mono-stamp);
 }
 
 :root {
   color-scheme: light;
 }
 
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
 html {
   scroll-behavior: smooth;
-}
-
-body {
-  background-color: var(--color-canvas);
-  color: var(--color-ink);
-  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
 }
 
-/* Respect users who prefer reduced motion. */
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
   }
 }
 
-h1, h2, h3, h4 {
-  font-family: var(--font-display), Georgia, serif;
+body {
+  background-color: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
 }
 
-/* Thin, editorial section rule. */
-.hairline {
-  border-color: var(--color-line);
+h1, h2, h3, h4 {
+  font-family: var(--font-display), Georgia, serif;
+  letter-spacing: -0.01em;
+}
+
+/* Technical / coordinate stamp type */
+.stamp {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  font-size: 0.7rem;
+}
+
+/* Film grain overlay — subtle, fixed */
+.grain::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  opacity: 0.05;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Hairline rule */
+.rule {
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--color-line), transparent);
+}
+
+/* Custom scrollbar (dark, understated) */
+::selection {
+  background: var(--color-ember);
+  color: #fff;
+}
+
+/* Reusable focus ring */
+.focusable:focus-visible {
+  outline: 2px solid var(--color-ember);
+  outline-offset: 2px;
+}
+
+/* Animated underline for nav links */
+.link-underline {
+  position: relative;
+}
+.link-underline::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -3px;
+  height: 1.5px;
+  width: 100%;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.32s cubic-bezier(0.65, 0, 0.35, 1);
+}
+.link-underline:hover::after {
+  transform: scaleX(1);
+}
+
+/* Slow drift for decorative elements */
+@keyframes drift {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+.drift {
+  animation: drift 7s ease-in-out infinite;
+}
+
+@keyframes spin-slow {
+  to { transform: rotate(360deg); }
+}
+.spin-slow {
+  animation: spin-slow 40s linear infinite;
 }

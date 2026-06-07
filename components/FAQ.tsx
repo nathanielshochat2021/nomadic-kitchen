@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
+import { Reveal } from "@/components/motion/Reveal";
+import { Stamp } from "@/components/decor/Decor";
 
 const FAQS = [
   {
@@ -17,7 +20,7 @@ const FAQS = [
   },
   {
     q: "Can I tow it off-road?",
-    a: "Yes — choose the off-road trailer package in the configurator. For pavement and registration, the single-axle road trailer is the way to go. For patio-only use, locking casters are included in the base build.",
+    a: "Yes — choose the off-road trailer package in the configurator (you’ll see it lift in the 3D preview). For pavement and registration, the single-axle road trailer is the way to go. Patio-only? Locking casters are included in the base build.",
   },
   {
     q: "Can it run off-grid?",
@@ -37,14 +40,19 @@ export default function FAQ() {
   const [open, setOpen] = useState<number | null>(0);
 
   return (
-    <section id="faq" className="bg-canvas py-20 sm:py-28">
+    <section id="faq" className="bg-canvas py-24 sm:py-32">
       <div className="mx-auto max-w-3xl px-5 sm:px-8">
-        <p className="mb-3 text-sm uppercase tracking-[0.2em] text-wood-deep">FAQ</p>
-        <h2 className="font-display text-3xl leading-tight text-ink sm:text-4xl">
-          Questions, answered
-        </h2>
+        <Reveal>
+          <div className="mb-4 flex items-center gap-3 text-wood-deep">
+            <span className="h-px w-10 bg-wood" />
+            <Stamp>FAQ</Stamp>
+          </div>
+          <h2 className="font-display text-4xl leading-tight text-ink sm:text-5xl">
+            Questions, <span className="italic text-wood-deep">answered.</span>
+          </h2>
+        </Reveal>
 
-        <div className="mt-10 divide-y divide-line border-y border-line">
+        <div className="mt-12 divide-y divide-line border-y border-line">
           {FAQS.map((item, i) => {
             const isOpen = open === i;
             return (
@@ -56,23 +64,27 @@ export default function FAQ() {
                 >
                   <span className="font-display text-lg text-ink">{item.q}</span>
                   <span
-                    className={`shrink-0 text-2xl leading-none text-wood transition-transform ${
-                      isOpen ? "rotate-45" : ""
+                    className={`grid h-7 w-7 shrink-0 place-items-center rounded-full border border-line text-lg text-ember transition-transform duration-300 ${
+                      isOpen ? "rotate-45 bg-ember text-white" : ""
                     }`}
                     aria-hidden
                   >
                     +
                   </span>
                 </button>
-                <div
-                  className={`grid transition-all duration-300 ${
-                    isOpen ? "grid-rows-[1fr] pb-5" : "grid-rows-[0fr]"
-                  }`}
-                >
-                  <div className="overflow-hidden">
-                    <p className="text-stone">{item.a}</p>
-                  </div>
-                </div>
+                <AnimatePresence initial={false}>
+                  {isOpen && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+                      className="overflow-hidden"
+                    >
+                      <p className="pb-5 pr-10 text-stone">{item.a}</p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             );
           })}
