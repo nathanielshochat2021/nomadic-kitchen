@@ -1,13 +1,64 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
+import * as THREE from "three";
 import { RoundedBox } from "@react-three/drei";
-import type { CartParams } from "@/lib/cart3d";
+import type { CartParams, Grade } from "@/lib/cart3d";
 
 // Shared palette for non-wood materials
 const STEEL = "#c6cace";
 const DARK = "#23231f";
 const RUBBER = "#191917";
+
+const BURNER_CENTER: Record<Grade, string> = {
+  std: "#3a3a36",
+  prem: "#9aa0a4",
+  pro: "#c0a062",
+};
+
+/** Engraved nameplate — text rendered to a canvas texture (no external fonts). */
+function Nameplate({ text, brass }: { text: string; brass: boolean }) {
+  const texture = useMemo(() => {
+    const w = 512;
+    const h = 120;
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext("2d");
+    if (ctx) {
+      ctx.fillStyle = brass ? "#b9974f" : "#8d9095";
+      ctx.fillRect(0, 0, w, h);
+      ctx.strokeStyle = "rgba(0,0,0,0.35)";
+      ctx.lineWidth = 7;
+      ctx.strokeRect(7, 7, w - 14, h - 14);
+      const t = (text || "").slice(0, 20);
+      if (t) {
+        ctx.fillStyle = brass ? "#37290f" : "#222529";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        let size = 58;
+        do {
+          ctx.font = `600 ${size}px Georgia, 'Times New Roman', serif`;
+          size -= 2;
+        } while (ctx.measureText(t).width > w - 48 && size > 18);
+        ctx.fillText(t, w / 2, h / 2 + 3);
+      }
+    }
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.anisotropy = 4;
+    tex.needsUpdate = true;
+    return tex;
+  }, [text, brass]);
+
+  useEffect(() => () => texture.dispose(), [texture]);
+
+  return (
+    <mesh position={[0.25, -0.3, 0.508]}>
+      <planeGeometry args={[0.62, 0.145]} />
+      <meshStandardMaterial map={texture} metalness={0.5} roughness={0.45} />
+    </mesh>
+  );
+}
 
 function Handle({ x, y, z, brass }: { x: number; y: number; z: number; brass: boolean }) {
   return (
@@ -22,7 +73,7 @@ function Handle({ x, y, z, brass }: { x: number; y: number; z: number; brass: bo
   );
 }
 
-function Burner({ x, z }: { x: number; z: number }) {
+function Burner({ x, z, center }: { x: number; z: number; center: string }) {
   return (
     <group position={[x, 0.52, z]}>
       <mesh castShadow>
@@ -31,7 +82,7 @@ function Burner({ x, z }: { x: number; z: number }) {
       </mesh>
       <mesh position={[0, 0.012, 0]}>
         <cylinderGeometry args={[0.07, 0.07, 0.02, 18]} />
-        <meshStandardMaterial color="#3a3a36" metalness={0.7} roughness={0.4} />
+        <meshStandardMaterial color={center} metalness={0.8} roughness={0.34} />
       </mesh>
     </group>
   );
@@ -131,8 +182,15 @@ export default function CartModel({ params: p }: { params: CartParams }) {
         <meshStandardMaterial color="#2c2c28" metalness={0.7} roughness={0.45} />
       </mesh>
       {burners.map((x) => (
-        <Burner key={x} x={x} z={0} />
+        <Burner key={x} x={x} z={0} center={BURNER_CENTER[p.cooktopGrade]} />
       ))}
+      {/* pro-grade brass trim around the cooktop */}
+      {p.cooktopGrade === "pro" && (
+        <mesh position={[-0.9, 0.515, 0]}>
+          <boxGeometry args={[1.34, 0.012, 0.86]} />
+          <meshStandardMaterial color="#c0a062" metalness={0.9} roughness={0.3} />
+        </mesh>
+      )}
       {p.cooktop === "grill" && (
         <mesh position={[-0.62, 0.53, 0]} castShadow>
           <boxGeometry args={[0.5, 0.04, 0.62]} />
@@ -214,13 +272,8 @@ export default function CartModel({ params: p }: { params: CartParams }) {
           </group>
         ))}
 
-      {/* ── Nameplate (personalization) ────────────────────── */}
-      {p.nameplate && (
-        <mesh position={[0.25, -0.3, 0.505]}>
-          <boxGeometry args={[0.5, 0.12, 0.012]} />
-          <meshStandardMaterial color={p.hardwareBrass ? "#c0a062" : "#8a8d86"} metalness={0.9} roughness={0.35} />
-        </mesh>
-      )}
+      {/* ── Engraved nameplate (personalization) ───────────── */}
+      {p.nameplate && <Nameplate text={p.engraveText} brass={p.hardwareBrass} />}
 
       {/* ── Wind guard (weather) ───────────────────────────── */}
       {p.windGuard && !p.lid && (

@@ -7,17 +7,17 @@ const PILLARS = [
   {
     n: "01",
     title: "Hand-built in solid wood",
-    body: "Joined and clad by hand — not flat-pack, not a vinyl wrap. One at a time, to weather decades in the open.",
+    body: "Joined and clad by hand. Not flat-pack, not a wrap. Built to weather decades outside.",
   },
   {
     n: "02",
-    title: "A real kitchen, not a gimmick",
-    body: "Stainless cooktop, prep counter, sink and storage in a footprint that actually cooks. For two, or for the whole camp.",
+    title: "A real kitchen",
+    body: "Stainless cooktop, prep, sink and storage in a footprint that actually cooks.",
   },
   {
     n: "03",
     title: "Patio to trailhead",
-    body: "Locking casters for the terrace, or a road / off-road trailer for everywhere the map runs out.",
+    body: "Locking casters, or a road / off-road trailer for everywhere else.",
   },
 ];
 
@@ -51,10 +51,9 @@ export default function Feature() {
                 One cart.<br />
                 <span className="italic text-wood-deep">Endlessly</span> yours.
               </h2>
-              <p className="mt-5 max-w-lg text-stone">
-                Nomadic Kitchen begins as a single, considered base build — then
-                becomes exactly what you need through a deep catalog of add-ons:
-                refrigeration, power, water, towing and finish.
+              <p className="mt-5 max-w-md text-stone">
+                One considered base build — then exactly what you need.
+                Refrigeration, power, water, towing, finish, and grade.
               </p>
             </Reveal>
 

@@ -4,7 +4,7 @@
 // configurator.ts; this file owns *appearance* only.
 // ─────────────────────────────────────────────────────────────────────────
 
-import type { Selection } from "@/lib/configurator";
+import type { Selection, TierSelection } from "@/lib/configurator";
 
 export interface WoodLook {
   hex: string;
@@ -35,6 +35,7 @@ export const FINISH_LOOK: Record<string, FinishLook> = {
 
 export type CooktopKind = "standard" | "pro" | "grill";
 export type MobilityKind = "casters" | "road" | "offroad";
+export type Grade = "std" | "prem" | "pro";
 
 export interface CartParams {
   woodHex: string;
@@ -42,6 +43,7 @@ export interface CartParams {
   finishClearcoat: number;
   woodDarken: number;
   cooktop: CooktopKind;
+  cooktopGrade: Grade;
   fridgeDrawers: number; // 0,1,2
   cooler: boolean;
   mobility: MobilityKind;
@@ -55,6 +57,7 @@ export interface CartParams {
   cuttingBoard: boolean;
   nameplate: boolean;
   hardwareBrass: boolean;
+  engraveText: string;
 }
 
 function has(sel: Selection, group: string, id: string): boolean {
@@ -69,7 +72,11 @@ function darkenHex(hex: string, amount: number): string {
   return `#${((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1)}`;
 }
 
-export function cartParams(sel: Selection): CartParams {
+export function cartParams(
+  sel: Selection,
+  tiers: TierSelection = {},
+  engraveText = ""
+): CartParams {
   const woodId = (sel["wood"] ?? ["wood-pine"])[0];
   const finishId = (sel["finish"] ?? ["finish-matte"])[0];
   const wood = WOOD_LOOK[woodId] ?? WOOD_LOOK["wood-pine"];
@@ -78,6 +85,7 @@ export function cartParams(sel: Selection): CartParams {
   const cooktopId = (sel["cooktop"] ?? ["cooktop-standard"])[0];
   const cooktop: CooktopKind =
     cooktopId === "cooktop-pro" ? "pro" : cooktopId === "cooktop-grill" ? "grill" : "standard";
+  const cooktopGrade = (tiers[cooktopId] ?? "std") as Grade;
 
   const fridgeId = (sel["refrigeration"] ?? ["fridge-none"])[0];
   const fridgeDrawers = fridgeId === "fridge-dual" ? 2 : fridgeId === "fridge-single" ? 1 : 0;
@@ -93,6 +101,7 @@ export function cartParams(sel: Selection): CartParams {
     finishClearcoat: finish.clearcoat,
     woodDarken: finish.darken,
     cooktop,
+    cooktopGrade,
     fridgeDrawers,
     cooler,
     mobility,
@@ -104,7 +113,8 @@ export function cartParams(sel: Selection): CartParams {
     speakers: has(sel, "comfort", "comfort-speakers"),
     extraDrawers: has(sel, "comfort", "comfort-drawers"),
     cuttingBoard: has(sel, "comfort", "comfort-board"),
-    nameplate: has(sel, "personalization", "personal-engrave"),
+    nameplate: has(sel, "personalization", "personal-engrave") || engraveText.trim().length > 0,
     hardwareBrass: has(sel, "personalization", "personal-hardware"),
+    engraveText: engraveText.trim(),
   };
 }

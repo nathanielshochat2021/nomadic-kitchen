@@ -10,11 +10,11 @@ import { Stamp } from "@/components/decor/Decor";
 type Status = "idle" | "submitting" | "success" | "error";
 
 export default function QuoteForm() {
-  const { selection, total } = useBuild();
+  const { selection, tiers, engraving, total } = useBuild();
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
 
-  const lines = summaryLines(selection);
+  const lines = summaryLines(selection, tiers);
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -31,6 +31,8 @@ export default function QuoteForm() {
       message: String(data.get("message") ?? ""),
       company: String(data.get("company") ?? ""), // honeypot
       selection,
+      tiers,
+      engraving,
       total,
     };
 
@@ -143,12 +145,20 @@ export default function QuoteForm() {
                     <span>
                       <span className="text-paper/45">{l.groupName}: </span>
                       {l.optionLabel}
+                      {l.tierLabel && <span className="text-ember-soft"> · {l.tierLabel}</span>}
                     </span>
                     <span className="shrink-0 text-paper/60">
                       {l.price > 0 ? `+${formatPrice(l.price)}` : "—"}
                     </span>
                   </li>
                 ))}
+                {engraving.trim() && (
+                  <li className="flex justify-between gap-3 text-paper/85">
+                    <span>
+                      <span className="text-paper/45">Engraving: </span>“{engraving.trim()}”
+                    </span>
+                  </li>
+                )}
               </ul>
               <div className="mt-4 flex items-baseline justify-between border-t border-white/10 pt-4">
                 <Stamp className="text-paper/50">Est. total</Stamp>

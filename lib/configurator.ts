@@ -1,15 +1,20 @@
 // ─────────────────────────────────────────────────────────────────────────
 // Nomadic Kitchen — Configurator: single source of truth
 //
-// Every price, option, group and preset lives here. The landing page,
-// configurator UI, sticky summary, presets and the quote API all read from
-// this file. Replace the placeholder prices below with your real costs and
-// the entire site updates accordingly.
+// Every price, option, tier and preset lives here. The landing page,
+// configurator UI, 3D cart, sticky summary, presets and the quote API all read
+// from this file. Replace placeholder prices with real costs and the entire
+// site (and the 3D builder) updates accordingly.
+//
+// MODEL
+//   Group        — a category (single- or multi-select)
+//   Option       — a choice inside a group (first single-choice option is $0)
+//   Tier         — an optional quality/brand grade ON an option
+//                  (e.g. a 4-burner cooktop in Standard / Premium / Pro-class)
 // ─────────────────────────────────────────────────────────────────────────
 
 export const BASE_PRICE = 9950;
 
-/** What every cart ships with, before any add-ons. */
 export const BASE_INCLUDES: string[] = [
   "Solid-wood cabinet, hand-built to order",
   "Stainless 3-burner cooktop",
@@ -21,37 +26,69 @@ export const BASE_INCLUDES: string[] = [
 
 export type GroupType = "single" | "multi";
 
+export interface Tier {
+  id: string;
+  label: string;
+  /** Added on top of the option's own price. First tier = $0 (standard grade). */
+  price: number;
+  description?: string;
+}
+
 export interface ConfigOption {
   id: string;
   label: string;
-  /** Added to the base price when selected. First option in a group is $0 (included). */
   price: number;
   description?: string;
+  /** Optional quality/brand grades. When set, a tier selector appears once chosen. */
+  tiers?: Tier[];
 }
 
 export interface ConfigGroup {
   id: string;
   name: string;
   type: GroupType;
-  /** Short helper text shown under the group heading. */
   description: string;
   options: ConfigOption[];
 }
 
-// A configuration is keyed by group id. Single-choice groups hold exactly one
-// option id; multi-select groups hold zero or more.
 export type Selection = Record<string, string[]>;
+/** optionId -> chosen tierId (only for options that have tiers) */
+export type TierSelection = Record<string, string>;
+
+// Reusable tier ladders
+const APPLIANCE_TIERS = (premium: number, pro: number, proLabel = "Pro · pro-grade"): Tier[] => [
+  { id: "std", label: "Standard", price: 0, description: "Quality stainless — our standard spec." },
+  { id: "prem", label: "Premium", price: premium, description: "Upgraded components, higher output and fit." },
+  { id: "pro", label: proLabel, price: pro, description: "Top-tier, professional / luxury brand-class." },
+];
+
+const TWO_TIERS = (premium: number): Tier[] => [
+  { id: "std", label: "Standard", price: 0, description: "Our standard stainless spec." },
+  { id: "prem", label: "Premium", price: premium, description: "Premium brand-class unit." },
+];
 
 export const GROUPS: ConfigGroup[] = [
   {
     id: "cooktop",
     name: "Cooktop & grill",
     type: "single",
-    description: "Your primary cooking surface.",
+    description: "Your primary cooking surface — then dial in the grade.",
     options: [
       { id: "cooktop-standard", label: "Standard 3-burner", price: 0, description: "Stainless 3-burner — the base build." },
-      { id: "cooktop-pro", label: "Pro 4-burner", price: 700, description: "More surface, higher BTU output." },
-      { id: "cooktop-grill", label: "Burner + grill / griddle", price: 900, description: "Open burners plus a grill/griddle station." },
+      {
+        id: "cooktop-pro",
+        label: "Pro 4-burner",
+        price: 700,
+        description: "More surface, higher BTU output.",
+        tiers: APPLIANCE_TIERS(600, 1800, "Pro · Viking-class"),
+      },
+      {
+        id: "cooktop-grill",
+        label: "Burner + grill / griddle",
+        price: 900,
+        description: "Open burners plus a grill/griddle station.",
+        tiers: APPLIANCE_TIERS(700, 1900, "Pro · brand-class"),
+      },
     ],
   },
   {
@@ -62,8 +99,20 @@ export const GROUPS: ConfigGroup[] = [
     options: [
       { id: "fridge-none", label: "None", price: 0, description: "Skip it, or bring your own cooler." },
       { id: "fridge-cooler", label: "Cooler slide", price: 350, description: "Insulated cooler on a full-extension slide." },
-      { id: "fridge-single", label: "Single fridge drawer", price: 1400, description: "Stainless 12V fridge drawer." },
-      { id: "fridge-dual", label: "Dual fridge drawers", price: 2400, description: "Two stainless 12V drawers — fridge + freezer." },
+      {
+        id: "fridge-single",
+        label: "Single fridge drawer",
+        price: 1400,
+        description: "Stainless 12V fridge drawer.",
+        tiers: TWO_TIERS(500),
+      },
+      {
+        id: "fridge-dual",
+        label: "Dual fridge drawers",
+        price: 2400,
+        description: "Two stainless 12V drawers — fridge + freezer.",
+        tiers: TWO_TIERS(800),
+      },
     ],
   },
   {
@@ -149,8 +198,8 @@ export const GROUPS: ConfigGroup[] = [
     type: "multi",
     description: "Make it unmistakably yours.",
     options: [
-      { id: "personal-engrave", label: "Laser-engraved name", price: 150, description: "Your name or mark, laser-engraved." },
-      { id: "personal-hardware", label: "Custom hardware finish", price: 200, description: "Hardware finished to your spec." },
+      { id: "personal-engrave", label: "Laser-engraved name", price: 150, description: "Your name or title, engraved on a nameplate." },
+      { id: "personal-hardware", label: "Custom hardware finish", price: 200, description: "Hardware finished to your spec (e.g. brass)." },
     ],
   },
 ];
@@ -160,6 +209,8 @@ export interface Preset {
   name: string;
   tagline: string;
   selection: Selection;
+  tiers?: TierSelection;
+  engraving?: string;
 }
 
 export const PRESETS: Preset[] = [
@@ -177,8 +228,10 @@ export const PRESETS: Preset[] = [
       power: ["power-led", "power-solar"],
       water: ["water-pressurized"],
       comfort: ["comfort-speakers"],
-      personalization: [],
+      personalization: ["personal-engrave"],
     },
+    tiers: { "cooktop-grill": "prem", "fridge-single": "std" },
+    engraving: "The Overlander",
   },
   {
     id: "estate",
@@ -196,6 +249,8 @@ export const PRESETS: Preset[] = [
       comfort: ["comfort-drawers", "comfort-board"],
       personalization: ["personal-engrave", "personal-hardware"],
     },
+    tiers: { "cooktop-pro": "pro", "fridge-dual": "prem" },
+    engraving: "The Estate",
   },
   {
     id: "tailgater",
@@ -213,15 +268,14 @@ export const PRESETS: Preset[] = [
       comfort: ["comfort-speakers", "comfort-trash"],
       personalization: ["personal-engrave"],
     },
+    tiers: { "cooktop-grill": "std", "fridge-single": "std" },
+    engraving: "The Tailgater",
   },
 ];
 
-// ── Helpers ────────────────────────────────────────────────────────────────
+// ── Lookups ──────────────────────────────────────────────────────────────
 
-const GROUP_BY_ID: Record<string, ConfigGroup> = Object.fromEntries(
-  GROUPS.map((g) => [g.id, g])
-);
-
+const GROUP_BY_ID: Record<string, ConfigGroup> = Object.fromEntries(GROUPS.map((g) => [g.id, g]));
 const OPTION_BY_ID: Record<string, ConfigOption> = Object.fromEntries(
   GROUPS.flatMap((g) => g.options.map((o) => [o.id, o]))
 );
@@ -229,26 +283,43 @@ const OPTION_BY_ID: Record<string, ConfigOption> = Object.fromEntries(
 export function getGroup(id: string): ConfigGroup | undefined {
   return GROUP_BY_ID[id];
 }
-
 export function getOption(id: string): ConfigOption | undefined {
   return OPTION_BY_ID[id];
 }
 
-/** Default configuration: first option of each single group, nothing for multi. */
 export function defaultSelection(): Selection {
   const sel: Selection = {};
-  for (const g of GROUPS) {
-    sel[g.id] = g.type === "single" ? [g.options[0].id] : [];
-  }
+  for (const g of GROUPS) sel[g.id] = g.type === "single" ? [g.options[0].id] : [];
   return sel;
 }
 
-/** Sum of base price plus every selected option. */
-export function totalPrice(selection: Selection): number {
+/** Every option that has tiers, defaulted to its first (standard) tier. */
+export function defaultTiers(): TierSelection {
+  const t: TierSelection = {};
+  for (const o of Object.values(OPTION_BY_ID)) {
+    if (o.tiers && o.tiers.length) t[o.id] = o.tiers[0].id;
+  }
+  return t;
+}
+
+function tierOf(optionId: string, tiers: TierSelection): Tier | null {
+  const opt = OPTION_BY_ID[optionId];
+  if (!opt?.tiers) return null;
+  const tid = tiers[optionId] ?? opt.tiers[0].id;
+  return opt.tiers.find((t) => t.id === tid) ?? opt.tiers[0];
+}
+
+/** Extra cost from the chosen tier of a selected option (0 if standard / no tiers). */
+export function tierPrice(optionId: string, tiers: TierSelection): number {
+  return tierOf(optionId, tiers)?.price ?? 0;
+}
+
+export function totalPrice(selection: Selection, tiers: TierSelection = {}): number {
   let total = BASE_PRICE;
   for (const ids of Object.values(selection)) {
     for (const id of ids) {
       total += OPTION_BY_ID[id]?.price ?? 0;
+      total += tierPrice(id, tiers);
     }
   }
   return total;
@@ -259,22 +330,25 @@ export interface SummaryLine {
   groupName: string;
   optionId: string;
   optionLabel: string;
+  tierLabel?: string;
   price: number;
 }
 
-/** Flattened, ordered list of every chosen option — used by the summary + quote email. */
-export function summaryLines(selection: Selection): SummaryLine[] {
+export function summaryLines(selection: Selection, tiers: TierSelection = {}): SummaryLine[] {
   const lines: SummaryLine[] = [];
   for (const g of GROUPS) {
     for (const id of selection[g.id] ?? []) {
       const opt = OPTION_BY_ID[id];
       if (!opt) continue;
+      const tier = tierOf(id, tiers);
+      const isUpgradedTier = tier && opt.tiers && opt.tiers[0].id !== tier.id;
       lines.push({
         groupId: g.id,
         groupName: g.name,
         optionId: opt.id,
         optionLabel: opt.label,
-        price: opt.price,
+        tierLabel: isUpgradedTier ? tier!.label : undefined,
+        price: opt.price + (tier?.price ?? 0),
       });
     }
   }
@@ -282,22 +356,21 @@ export function summaryLines(selection: Selection): SummaryLine[] {
 }
 
 export function formatPrice(n: number): string {
-  return n.toLocaleString("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  });
+  return n.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
 }
 
-/** Plain-text spec block for the quote email / server log. */
-export function specToText(selection: Selection): string {
-  const lines = summaryLines(selection).map((l) => {
+export function specToText(selection: Selection, tiers: TierSelection = {}, engraving = ""): string {
+  const lines = summaryLines(selection, tiers).map((l) => {
+    const name = l.tierLabel ? `${l.optionLabel} · ${l.tierLabel}` : l.optionLabel;
     const price = l.price > 0 ? `  (+${formatPrice(l.price)})` : "  (included)";
-    return `  • ${l.groupName}: ${l.optionLabel}${price}`;
+    return `  • ${l.groupName}: ${name}${price}`;
   });
   return [
     `Base build: ${formatPrice(BASE_PRICE)}`,
     ...lines,
-    `\nTotal: ${formatPrice(totalPrice(selection))}`,
-  ].join("\n");
+    engraving.trim() ? `  • Engraving text: "${engraving.trim()}"` : "",
+    `\nTotal: ${formatPrice(totalPrice(selection, tiers))}`,
+  ]
+    .filter(Boolean)
+    .join("\n");
 }

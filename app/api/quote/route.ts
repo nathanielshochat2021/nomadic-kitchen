@@ -4,6 +4,7 @@ import {
   specToText,
   totalPrice,
   type Selection,
+  type TierSelection,
 } from "@/lib/configurator";
 
 export const runtime = "nodejs";
@@ -17,6 +18,8 @@ interface QuotePayload {
   /** Honeypot — bots fill this, humans don't. */
   company?: string;
   selection?: Selection;
+  tiers?: TierSelection;
+  engraving?: string;
   total?: number;
 }
 
@@ -51,9 +54,11 @@ export async function POST(req: Request) {
   }
 
   const selection = (body.selection ?? {}) as Selection;
+  const tiers = (body.tiers ?? {}) as TierSelection;
+  const engraving = (body.engraving ?? "").toString().slice(0, 40);
   // Recompute the total server-side — never trust the client's number.
-  const total = totalPrice(selection);
-  const spec = specToText(selection);
+  const total = totalPrice(selection, tiers);
+  const spec = specToText(selection, tiers, engraving);
 
   const summary = [
     `New Nomadic Kitchen quote request`,

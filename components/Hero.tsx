@@ -37,36 +37,32 @@ export default function Hero() {
           <Stamp className="text-ember-soft">Built to order · No. 001</Stamp>
         </motion.div>
 
-        <h1 className="max-w-4xl font-display text-[2.7rem] leading-[1.02] text-paper sm:text-7xl md:text-[5.2rem]">
-          {["The kitchen that", "follows you"].map((line, i) => (
-            <motion.span
-              key={line}
-              className="block"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, ease, delay: 0.1 + i * 0.12 }}
-            >
-              {line}
-            </motion.span>
-          ))}
+        <h1 className="max-w-4xl font-display text-[3rem] leading-[1.0] text-paper sm:text-8xl md:text-[6rem]">
+          <motion.span
+            className="block"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease, delay: 0.1 }}
+          >
+            Built by hand.
+          </motion.span>
           <motion.span
             className="block italic text-ember-soft"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease, delay: 0.34 }}
+            transition={{ duration: 0.8, ease, delay: 0.24 }}
           >
-            outside.
+            Made to roam.
           </motion.span>
         </h1>
 
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, ease, delay: 0.5 }}
-          className="mt-6 max-w-xl text-base text-paper/85 sm:text-lg"
+          transition={{ duration: 0.7, ease, delay: 0.44 }}
+          className="mt-6 max-w-md text-base text-paper/85 sm:text-lg"
         >
-          A hand-built, wood-clad outdoor kitchen — engineered around how you cook
-          and where you roam. From the back patio to the far trailhead.
+          A wood-clad outdoor kitchen, built to order — and configured to you.
         </motion.p>
 
         <motion.div
