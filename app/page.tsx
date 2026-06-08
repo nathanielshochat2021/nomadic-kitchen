@@ -3,6 +3,7 @@ import Nav from "@/components/Nav";
 import Hero from "@/components/Hero";
 import Feature from "@/components/Feature";
 import Configurator from "@/components/Configurator";
+import Commission from "@/components/Commission";
 import Gallery from "@/components/Gallery";
 import HowItWorks from "@/components/HowItWorks";
 import FAQ from "@/components/FAQ";
@@ -17,6 +18,7 @@ export default function Home() {
         <Hero />
         <Feature />
         <Configurator />
+        <Commission />
         <Gallery />
         <HowItWorks />
         <FAQ />

@@ -95,7 +95,7 @@ export default function Hero() {
       <div className="absolute inset-x-0 bottom-0 z-10 hidden border-t border-white/10 bg-night/40 backdrop-blur-sm sm:block">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-8 py-3 text-paper/60">
           <Stamp>{SITE_COORD}</Stamp>
-          <Stamp className="hidden md:block">Solid wood · Stainless · Off-grid ready</Stamp>
+          <Stamp className="hidden md:block">Numbered editions · Limited annual run</Stamp>
           <Stamp className="animate-pulse">Scroll to explore ↓</Stamp>
         </div>
       </div>

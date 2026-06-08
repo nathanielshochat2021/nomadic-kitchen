@@ -412,24 +412,57 @@ export default function CartModel({ params: p, mode }: { params: CartParams; mod
       <Leg x={1.5} z={-0.42} topLocal={-0.5} extended={mode === "parked"} brass={p.hardwareBrass} />
       <Leg x={-1.5} z={0} topLocal={-0.5} extended={mode === "parked"} brass={p.hardwareBrass} />
 
-      {/* Hitch coupler on the single-leg end — always visible (attaches to a vehicle) */}
+      {/* Trailer coupler on the single-leg end — always visible (attaches to a vehicle) */}
       <group>
-        {/* A-frame drawbars converging to the coupler */}
-        {[0.28, -0.28].map((z) => (
-          <mesh key={z} position={[-1.95, wheelY, z / 2]} rotation={[0, z > 0 ? 0.28 : -0.28, 0]} castShadow>
-            <boxGeometry args={[1.0, 0.07, 0.08]} />
+        {/* central tongue / drawbar */}
+        <mesh position={[-1.98, wheelY, 0]} castShadow>
+          <boxGeometry args={[0.8, 0.09, 0.1]} />
+          <meshStandardMaterial color={FRAME} metalness={0.5} roughness={0.6} />
+        </mesh>
+        {/* A-frame side gussets */}
+        {[1, -1].map((s) => (
+          <mesh key={s} position={[-1.82, wheelY, s * 0.18]} rotation={[0, s * 0.85, 0]} castShadow>
+            <boxGeometry args={[0.42, 0.07, 0.06]} />
             <meshStandardMaterial color={FRAME} metalness={0.5} roughness={0.6} />
           </mesh>
         ))}
-        {/* coupler head */}
-        <mesh position={[-2.42, wheelY, 0]} castShadow>
-          <boxGeometry args={[0.16, 0.12, 0.12]} />
+        {/* cast coupler head */}
+        <mesh position={[-2.4, wheelY, 0]} castShadow>
+          <boxGeometry args={[0.22, 0.14, 0.15]} />
+          <meshStandardMaterial color="#3b3e41" metalness={0.72} roughness={0.4} envMapIntensity={1.1} />
+        </mesh>
+        {/* sloped nose */}
+        <mesh position={[-2.52, wheelY + 0.05, 0]} rotation={[0, 0, 0.62]} castShadow>
+          <boxGeometry args={[0.16, 0.1, 0.15]} />
+          <meshStandardMaterial color="#3b3e41" metalness={0.72} roughness={0.4} />
+        </mesh>
+        {/* latch handle */}
+        <mesh position={[-2.33, wheelY + 0.12, 0]} rotation={[0, 0, -0.3]} castShadow>
+          <boxGeometry args={[0.17, 0.03, 0.045]} />
           <meshStandardMaterial color={STEEL} metalness={0.85} roughness={0.35} envMapIntensity={1.1} />
         </mesh>
-        <mesh position={[-2.5, wheelY - 0.05, 0]} castShadow>
-          <sphereGeometry args={[0.055, 16, 16]} />
-          <meshStandardMaterial color="#1c1c1a" metalness={0.7} roughness={0.45} />
+        {/* socket cup (clamps over the ball) */}
+        <mesh position={[-2.45, wheelY - 0.09, 0]} castShadow>
+          <cylinderGeometry args={[0.055, 0.062, 0.09, 16]} />
+          <meshStandardMaterial color="#2a2c2e" metalness={0.6} roughness={0.5} />
         </mesh>
+        {/* chrome tow ball (vehicle side) */}
+        <mesh position={[-2.45, wheelY - 0.15, 0]} castShadow>
+          <sphereGeometry args={[0.05, 16, 16]} />
+          <meshStandardMaterial color="#d8dade" metalness={0.95} roughness={0.12} envMapIntensity={1.4} />
+        </mesh>
+        {/* ball mount post */}
+        <mesh position={[-2.45, wheelY - 0.22, 0]} castShadow>
+          <cylinderGeometry args={[0.03, 0.03, 0.08, 12]} />
+          <meshStandardMaterial color="#1c1c1a" metalness={0.5} roughness={0.6} />
+        </mesh>
+        {/* safety-chain hooks */}
+        {[0.075, -0.075].map((z) => (
+          <mesh key={z} position={[-2.26, wheelY - 0.05, z]} rotation={[Math.PI / 2, 0, 0]} castShadow>
+            <torusGeometry args={[0.028, 0.009, 8, 12]} />
+            <meshStandardMaterial color="#2a2c2e" metalness={0.6} roughness={0.5} />
+          </mesh>
+        ))}
       </group>
     </group>
   );
