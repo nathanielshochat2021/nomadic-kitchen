@@ -148,6 +148,11 @@ export default function CartModel({ params: p, mode }: { params: CartParams; mod
     [p.woodHex, p.finishRoughness, p.finishClearcoat]
   );
 
+  // Re-create the wood material whenever the finish changes. Toggling clearcoat
+  // between 0 (matte) and >0 (oil/stain) needs a fresh material, otherwise
+  // three.js keeps the old shader and the cabinet renders broken/invisible.
+  const woodKey = `${p.woodHex}-${p.finishClearcoat}-${p.finishRoughness}`;
+
   const burners: number[] =
     p.cooktop === "pro"
       ? [-1.4, -1.05, -0.7, -0.35]
@@ -164,7 +169,7 @@ export default function CartModel({ params: p, mode }: { params: CartParams; mod
     <group position={[0, baseY, 0]}>
       {/* ── Cabinet body ───────────────────────────────────── */}
       <RoundedBox args={[3.2, 0.95, 1.0]} radius={0.04} smoothness={4} castShadow receiveShadow>
-        <meshPhysicalMaterial {...woodProps} />
+        <meshPhysicalMaterial key={woodKey} {...woodProps} />
       </RoundedBox>
 
       {[-0.28, 0, 0.28].map((y) => (
@@ -181,7 +186,7 @@ export default function CartModel({ params: p, mode }: { params: CartParams; mod
 
       <mesh position={[0, -0.42, 0.18]} castShadow>
         <boxGeometry args={[2.9, 0.04, 0.5]} />
-        <meshPhysicalMaterial {...woodProps} />
+        <meshPhysicalMaterial key={woodKey} {...woodProps} />
       </mesh>
 
       {/* ── Cooktop panel + burners ────────────────────────── */}
@@ -247,7 +252,7 @@ export default function CartModel({ params: p, mode }: { params: CartParams; mod
           <group key={`dr-${y}`}>
             <mesh position={[-0.25, y, 0.5]} castShadow>
               <boxGeometry args={[0.62, 0.25, 0.03]} />
-              <meshPhysicalMaterial {...woodProps} />
+              <meshPhysicalMaterial key={woodKey} {...woodProps} />
             </mesh>
             <Handle x={-0.25} y={y + 0.08} z={0.53} brass={p.hardwareBrass} />
           </group>
