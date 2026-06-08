@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import {
   Float,
@@ -14,11 +15,26 @@ import CartModel, { type ViewMode } from "@/components/three/CartModel";
 import type { CartParams } from "@/lib/cart3d";
 
 export default function CartViewer({ params, mode }: { params: CartParams; mode: ViewMode }) {
+  // Pull the camera back on narrow screens so the whole cart fits in frame.
+  const [compact, setCompact] = useState(
+    () => typeof window !== "undefined" && window.innerWidth < 640
+  );
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 639px)");
+    const onChange = () => setCompact(mq.matches);
+    onChange();
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
+
+  const camPos: [number, number, number] = compact ? [5.2, 2.5, 6.4] : [4.0, 1.9, 4.6];
+
   return (
     <Canvas
+      key={compact ? "compact" : "wide"}
       shadows
       dpr={[1, 2]}
-      camera={{ position: [4.0, 1.9, 4.6], fov: 36 }}
+      camera={{ position: camPos, fov: compact ? 32 : 36 }}
       gl={{ antialias: true, alpha: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.05 }}
       className="!touch-none"
     >
@@ -69,7 +85,7 @@ export default function CartViewer({ params, mode }: { params: CartParams; mode:
         enablePan={false}
         enableZoom
         minDistance={3.4}
-        maxDistance={8}
+        maxDistance={10}
         minPolarAngle={0.35}
         maxPolarAngle={Math.PI / 2.05}
         autoRotate

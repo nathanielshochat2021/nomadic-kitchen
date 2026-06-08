@@ -189,26 +189,21 @@ function Wheel({ z, y, radius, knobby }: { z: number; y: number; radius: number;
   );
 }
 
-/** Hydraulic leg at a corner — extends to the ground when parked, tucks up when travelling. */
-function Leg({ x, z, topLocal, extended, brass }: { x: number; z: number; topLocal: number; extended: boolean; brass: boolean }) {
-  const footWorld = GROUND + 0.02;
-  const bottomLocal = extended ? footWorld : topLocal - 0.16;
+/** Hydraulic leg — drawn only when parked. Extends from the frame down to the ground. */
+function Leg({ x, z, topLocal, bottomLocal, brass }: { x: number; z: number; topLocal: number; bottomLocal: number; brass: boolean }) {
   const len = topLocal - bottomLocal;
   const cy = (topLocal + bottomLocal) / 2;
   return (
     <group position={[x, 0, z]}>
-      {/* hydraulic cylinder */}
       <mesh position={[0, cy, 0]} castShadow>
         <cylinderGeometry args={[0.035, 0.035, len, 14]} />
         <meshStandardMaterial color={brass ? "#9c7f44" : "#9a9ea1"} metalness={0.9} roughness={0.3} envMapIntensity={1.1} />
       </mesh>
       {/* foot pad */}
-      {extended && (
-        <mesh position={[0, bottomLocal + 0.015, 0]} castShadow>
-          <cylinderGeometry args={[0.075, 0.085, 0.03, 16]} />
-          <meshStandardMaterial color={FRAME} metalness={0.5} roughness={0.6} />
-        </mesh>
-      )}
+      <mesh position={[0, bottomLocal + 0.015, 0]} castShadow>
+        <cylinderGeometry args={[0.075, 0.085, 0.03, 16]} />
+        <meshStandardMaterial color={FRAME} metalness={0.5} roughness={0.6} />
+      </mesh>
     </group>
   );
 }
@@ -231,9 +226,11 @@ export default function CartModel({ params: p, mode }: { params: CartParams; mod
   const woodKey = `${p.woodHex}-${p.finishClearcoat}-${p.finishRoughness}`;
 
   const wheelR = 0.34;
-  const baseY = mode === "parked" ? 0.18 : 0;
+  const baseY = mode === "parked" ? 0.14 : 0;
   const wheelZ = 0.64;
   const wheelY = -0.78;
+  // Local y the legs reach so their feet land on the world ground plane.
+  const legBottomLocal = GROUND - baseY;
 
   return (
     <group position={[0, baseY, 0]}>
@@ -399,18 +396,26 @@ export default function CartModel({ params: p, mode }: { params: CartParams; mod
           <meshStandardMaterial color={FRAME} metalness={0.5} roughness={0.6} />
         </mesh>
       ))}
-      {/* axle across the short dimension (along Z) */}
-      <mesh position={[0, wheelY, 0]} rotation={[Math.PI / 2, 0, 0]} castShadow>
-        <cylinderGeometry args={[0.05, 0.05, 2 * wheelZ, 14]} />
-        <meshStandardMaterial color={FRAME} metalness={0.6} roughness={0.5} />
-      </mesh>
-      <Wheel z={wheelZ} y={wheelY} radius={wheelR} knobby={false} />
-      <Wheel z={-wheelZ} y={wheelY} radius={wheelR} knobby={false} />
+      {/* Travel: single axle + removable wheels (no legs) */}
+      {mode === "travel" && (
+        <group>
+          <mesh position={[0, wheelY, 0]} rotation={[Math.PI / 2, 0, 0]} castShadow>
+            <cylinderGeometry args={[0.05, 0.05, 2 * wheelZ, 14]} />
+            <meshStandardMaterial color={FRAME} metalness={0.6} roughness={0.5} />
+          </mesh>
+          <Wheel z={wheelZ} y={wheelY} radius={wheelR} knobby={false} />
+          <Wheel z={-wheelZ} y={wheelY} radius={wheelR} knobby={false} />
+        </group>
+      )}
 
-      {/* Three hydraulic legs: two at the rear corners, one centered on the hitch end */}
-      <Leg x={1.5} z={0.42} topLocal={-0.5} extended={mode === "parked"} brass={p.hardwareBrass} />
-      <Leg x={1.5} z={-0.42} topLocal={-0.5} extended={mode === "parked"} brass={p.hardwareBrass} />
-      <Leg x={-1.5} z={0} topLocal={-0.5} extended={mode === "parked"} brass={p.hardwareBrass} />
+      {/* Parked: three hydraulic legs (two at the rear, one centered on the hitch end), wheels off */}
+      {mode === "parked" && (
+        <group>
+          <Leg x={1.5} z={0.42} topLocal={-0.5} bottomLocal={legBottomLocal} brass={p.hardwareBrass} />
+          <Leg x={1.5} z={-0.42} topLocal={-0.5} bottomLocal={legBottomLocal} brass={p.hardwareBrass} />
+          <Leg x={-1.5} z={0} topLocal={-0.5} bottomLocal={legBottomLocal} brass={p.hardwareBrass} />
+        </group>
+      )}
 
       {/* Trailer coupler on the single-leg end — always visible (attaches to a vehicle) */}
       <group>
@@ -446,16 +451,19 @@ export default function CartModel({ params: p, mode }: { params: CartParams; mod
           <cylinderGeometry args={[0.055, 0.062, 0.09, 16]} />
           <meshStandardMaterial color="#2a2c2e" metalness={0.6} roughness={0.5} />
         </mesh>
-        {/* chrome tow ball (vehicle side) */}
-        <mesh position={[-2.45, wheelY - 0.15, 0]} castShadow>
-          <sphereGeometry args={[0.05, 16, 16]} />
-          <meshStandardMaterial color="#d8dade" metalness={0.95} roughness={0.12} envMapIntensity={1.4} />
-        </mesh>
-        {/* ball mount post */}
-        <mesh position={[-2.45, wheelY - 0.22, 0]} castShadow>
-          <cylinderGeometry args={[0.03, 0.03, 0.08, 12]} />
-          <meshStandardMaterial color="#1c1c1a" metalness={0.5} roughness={0.6} />
-        </mesh>
+        {/* chrome tow ball + mount (vehicle side — only while hitched for travel) */}
+        {mode === "travel" && (
+          <group>
+            <mesh position={[-2.45, wheelY - 0.15, 0]} castShadow>
+              <sphereGeometry args={[0.05, 16, 16]} />
+              <meshStandardMaterial color="#d8dade" metalness={0.95} roughness={0.12} envMapIntensity={1.4} />
+            </mesh>
+            <mesh position={[-2.45, wheelY - 0.22, 0]} castShadow>
+              <cylinderGeometry args={[0.03, 0.03, 0.08, 12]} />
+              <meshStandardMaterial color="#1c1c1a" metalness={0.5} roughness={0.6} />
+            </mesh>
+          </group>
+        )}
         {/* safety-chain hooks */}
         {[0.075, -0.075].map((z) => (
           <mesh key={z} position={[-2.26, wheelY - 0.05, z]} rotation={[Math.PI / 2, 0, 0]} castShadow>

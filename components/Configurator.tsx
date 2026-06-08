@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 import dynamic from "next/dynamic";
-import { AnimatePresence, motion } from "motion/react";
 import type { ViewMode } from "@/components/three/CartModel";
 import { useBuild } from "@/components/BuildProvider";
 import {
@@ -118,7 +117,7 @@ export default function Configurator() {
         <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:gap-8">
           {/* ── 3D viewer (sticky on every screen size) ────── */}
           <div className="sticky top-[4.5rem] z-20 self-start lg:top-24">
-            <div className="relative h-[320px] overflow-hidden rounded-3xl border border-white/10 bg-[radial-gradient(120%_120%_at_50%_15%,#2b362b,#161c16_70%)] sm:h-[440px] lg:h-[560px]">
+            <div className="relative h-[380px] overflow-hidden rounded-3xl border border-white/10 bg-[radial-gradient(120%_120%_at_50%_15%,#2b362b,#161c16_70%)] sm:h-[460px] lg:h-[560px]">
               <CartViewer params={params} mode={mode} />
               <div className="pointer-events-none absolute inset-0">
                 <div className="absolute left-4 top-4 flex items-center gap-2 rounded-full bg-night/50 px-3 py-1.5 backdrop-blur-sm">
@@ -182,7 +181,9 @@ export default function Configurator() {
                       <span className="font-display text-lg text-paper">{group.name}</span>
                       <span className="mt-0.5 block truncate text-xs text-paper/55">{summarize(group.id)}</span>
                     </span>
-                    <span className="shrink-0 text-xs text-paper/40">{group.type === "single" ? "Pick one" : "Pick any"}</span>
+                    <span className="hidden shrink-0 text-xs text-paper/40 sm:block">
+                      {group.type === "single" ? "Pick one" : "Pick any"}
+                    </span>
                     <svg
                       viewBox="0 0 12 12"
                       className={`h-3.5 w-3.5 shrink-0 text-paper/60 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`}
@@ -195,16 +196,13 @@ export default function Configurator() {
                     </svg>
                   </button>
 
-                  <AnimatePresence initial={false}>
-                    {isOpen && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-                        className="overflow-hidden"
-                      >
-                        <div className="px-4 pb-4">
+                  <div
+                    className={`grid overflow-hidden transition-[grid-template-rows] duration-300 ease-out ${
+                      isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+                    }`}
+                  >
+                    <div className="min-h-0 overflow-hidden">
+                      <div className="px-4 pb-4">
                   <div className="grid gap-2.5 sm:grid-cols-2">
                     {group.options.map((opt) => {
                       const active = isSelected(group.id, opt.id);
@@ -298,10 +296,9 @@ export default function Configurator() {
                       </p>
                     </div>
                   )}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               );
             })}
