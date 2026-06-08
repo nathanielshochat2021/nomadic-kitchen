@@ -55,16 +55,17 @@ export type Selection = Record<string, string[]>;
 /** optionId -> chosen tierId (only for options that have tiers) */
 export type TierSelection = Record<string, string>;
 
-// Reusable tier ladders
-const APPLIANCE_TIERS = (premium: number, pro: number, proLabel = "Pro · pro-grade"): Tier[] => [
-  { id: "std", label: "Standard", price: 0, description: "Quality stainless — our standard spec." },
-  { id: "prem", label: "Premium", price: premium, description: "Upgraded components, higher output and fit." },
-  { id: "pro", label: proLabel, price: pro, description: "Top-tier, professional / luxury brand-class." },
-];
-
+// Reusable tier ladder for two-grade modules (fridge)
 const TWO_TIERS = (premium: number): Tier[] => [
   { id: "std", label: "Standard", price: 0, description: "Our standard stainless spec." },
   { id: "prem", label: "Premium", price: premium, description: "Premium brand-class unit." },
+];
+
+// Cooktop appliance grades (applied to every burner layout)
+const COOKTOP_TIERS: Tier[] = [
+  { id: "std", label: "Hibachi-style", price: 0, description: "Cast-iron hibachi grill top — rugged and simple." },
+  { id: "prem", label: "Premium gas", price: 600, description: "Stainless gas burners with continuous grates." },
+  { id: "pro", label: "Viking-class", price: 1800, description: "Pro stainless rangetop, heavy continuous cast-iron grates." },
 ];
 
 export const GROUPS: ConfigGroup[] = [
@@ -72,23 +73,11 @@ export const GROUPS: ConfigGroup[] = [
     id: "cooktop",
     name: "Cooktop & grill",
     type: "single",
-    description: "Your primary cooking surface — then dial in the grade.",
+    description: "Pick your burner layout, then the appliance grade.",
     options: [
-      { id: "cooktop-standard", label: "Standard 3-burner", price: 0, description: "Stainless 3-burner — the base build." },
-      {
-        id: "cooktop-pro",
-        label: "Pro 4-burner",
-        price: 700,
-        description: "More surface, higher BTU output.",
-        tiers: APPLIANCE_TIERS(600, 1800, "Pro · Viking-class"),
-      },
-      {
-        id: "cooktop-grill",
-        label: "Burner + grill / griddle",
-        price: 900,
-        description: "Open burners plus a grill/griddle station.",
-        tiers: APPLIANCE_TIERS(700, 1900, "Pro · brand-class"),
-      },
+      { id: "cooktop-standard", label: "3-burner", price: 0, description: "Three cooking zones — the base layout.", tiers: COOKTOP_TIERS },
+      { id: "cooktop-pro", label: "4-burner", price: 700, description: "A fourth zone and more surface.", tiers: COOKTOP_TIERS },
+      { id: "cooktop-grill", label: "Burner + griddle", price: 900, description: "Open burners plus a flat griddle station.", tiers: COOKTOP_TIERS },
     ],
   },
   {

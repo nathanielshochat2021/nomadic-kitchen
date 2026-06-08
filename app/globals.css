@@ -60,7 +60,8 @@ body {
   color: var(--color-ink);
   font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
   text-rendering: optimizeLegibility;
-  overflow-x: hidden;
+  /* clip (not hidden) so it doesn't create a scroll container that breaks position: sticky */
+  overflow-x: clip;
 }
 
 h1, h2, h3, h4 {

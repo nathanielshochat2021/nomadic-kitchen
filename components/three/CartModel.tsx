@@ -3,7 +3,7 @@
 import { useEffect, useMemo } from "react";
 import * as THREE from "three";
 import { RoundedBox } from "@react-three/drei";
-import type { CartParams, Grade } from "@/lib/cart3d";
+import type { CartParams, CooktopKind, Grade } from "@/lib/cart3d";
 
 export type ViewMode = "parked" | "travel";
 
@@ -12,12 +12,6 @@ const STEEL = "#c6cace";
 const DARK = "#23231f";
 const RUBBER = "#191917";
 const FRAME = "#2a2c26";
-
-const BURNER_CENTER: Record<Grade, string> = {
-  std: "#3a3a36",
-  prem: "#9aa0a4",
-  pro: "#c0a062",
-};
 
 // Ground plane (matches ContactShadows in CartViewer)
 const GROUND = -1.15;
@@ -90,6 +84,89 @@ function Burner({ x, z, center }: { x: number; z: number; center: string }) {
   );
 }
 
+/** Cooktop surface — style changes with grade: hibachi (std) / gas (prem) / Viking-class (pro). */
+function Cooktop({ type, grade, brass }: { type: CooktopKind; grade: Grade; brass: boolean }) {
+  const cx = -0.9;
+  const zoneXs =
+    type === "pro" ? [-1.46, -1.12, -0.78, -0.44] : type === "grill" ? [-1.42, -1.06] : [-1.42, -0.9, -0.38];
+  const knobColor = brass ? "#c0a062" : "#2b2b2b";
+
+  return (
+    <group>
+      {/* base tray */}
+      <mesh position={[cx, 0.5, 0]} receiveShadow castShadow>
+        <boxGeometry args={[1.34, 0.05, 0.84]} />
+        <meshStandardMaterial
+          color={grade === "std" ? "#2b2b28" : STEEL}
+          metalness={grade === "std" ? 0.4 : 0.85}
+          roughness={grade === "std" ? 0.6 : 0.3}
+          envMapIntensity={1.1}
+        />
+      </mesh>
+
+      {/* Standard = hibachi grill top: dark firebox + parallel grate bars */}
+      {grade === "std" && (
+        <group>
+          <mesh position={[cx, 0.5, 0]}>
+            <boxGeometry args={[1.22, 0.06, 0.72]} />
+            <meshStandardMaterial color="#15140f" roughness={0.85} metalness={0.2} />
+          </mesh>
+          {[-0.3, -0.2, -0.1, 0, 0.1, 0.2, 0.3].map((z) => (
+            <mesh key={z} position={[cx, 0.55, z]} castShadow>
+              <boxGeometry args={[1.18, 0.025, 0.025]} />
+              <meshStandardMaterial color="#1d1d1a" metalness={0.4} roughness={0.7} />
+            </mesh>
+          ))}
+        </group>
+      )}
+
+      {/* Premium = open stainless gas burners */}
+      {grade === "prem" && zoneXs.map((x) => <Burner key={x} x={x} z={0} center="#9aa0a4" />)}
+
+      {/* Pro / Viking-class = continuous heavy cast-iron grate grid + polished stainless trim */}
+      {grade === "pro" && (
+        <group>
+          <mesh position={[cx, 0.53, 0]}>
+            <boxGeometry args={[1.4, 0.02, 0.9]} />
+            <meshStandardMaterial color="#d6d9dc" metalness={0.95} roughness={0.18} envMapIntensity={1.3} />
+          </mesh>
+          {[-0.3, -0.12, 0.06, 0.24].map((z) => (
+            <mesh key={`gx${z}`} position={[cx, 0.56, z]} castShadow>
+              <boxGeometry args={[1.26, 0.035, 0.035]} />
+              <meshStandardMaterial color="#17181a" metalness={0.5} roughness={0.55} />
+            </mesh>
+          ))}
+          {[-1.45, -1.15, -0.85, -0.55, -0.35].map((x) => (
+            <mesh key={`gz${x}`} position={[x, 0.56, -0.03]} castShadow>
+              <boxGeometry args={[0.035, 0.035, 0.74]} />
+              <meshStandardMaterial color="#17181a" metalness={0.5} roughness={0.55} />
+            </mesh>
+          ))}
+        </group>
+      )}
+
+      {/* Griddle (grill format) */}
+      {type === "grill" && (
+        <mesh position={[-0.55, 0.54, 0]} castShadow>
+          <boxGeometry args={[0.5, 0.035, 0.66]} />
+          <meshStandardMaterial color="#3a3a34" metalness={0.55} roughness={0.5} />
+        </mesh>
+      )}
+
+      {/* Control knobs on the front face (premium + pro) */}
+      {grade !== "std" &&
+        zoneXs.map((x) => (
+          <group key={`k${x}`} position={[x, 0.45, 0.52]} rotation={[Math.PI / 2, 0, 0]}>
+            <mesh castShadow>
+              <cylinderGeometry args={[0.035, 0.04, 0.05, 16]} />
+              <meshStandardMaterial color={knobColor} metalness={0.85} roughness={0.35} envMapIntensity={1.1} />
+            </mesh>
+          </group>
+        ))}
+    </group>
+  );
+}
+
 /** Road wheel — axle runs along Z, so the wheel sits on a LONG side and rolls along X. */
 function Wheel({ z, y, radius, knobby }: { z: number; y: number; radius: number; knobby: boolean }) {
   return (
@@ -153,13 +230,6 @@ export default function CartModel({ params: p, mode }: { params: CartParams; mod
   // three.js keeps the old shader and the cabinet renders broken/invisible.
   const woodKey = `${p.woodHex}-${p.finishClearcoat}-${p.finishRoughness}`;
 
-  const burners: number[] =
-    p.cooktop === "pro"
-      ? [-1.4, -1.05, -0.7, -0.35]
-      : p.cooktop === "grill"
-      ? [-1.42, -1.05]
-      : [-1.4, -0.95, -0.5];
-
   const wheelR = 0.34;
   const baseY = mode === "parked" ? 0.18 : 0;
   const wheelZ = 0.64;
@@ -189,26 +259,8 @@ export default function CartModel({ params: p, mode }: { params: CartParams; mod
         <meshPhysicalMaterial key={woodKey} {...woodProps} />
       </mesh>
 
-      {/* ── Cooktop panel + burners ────────────────────────── */}
-      <mesh position={[-0.9, 0.5, 0]} receiveShadow>
-        <boxGeometry args={[1.3, 0.02, 0.82]} />
-        <meshStandardMaterial color="#2c2c28" metalness={0.7} roughness={0.45} />
-      </mesh>
-      {burners.map((x) => (
-        <Burner key={x} x={x} z={0} center={BURNER_CENTER[p.cooktopGrade]} />
-      ))}
-      {p.cooktopGrade === "pro" && (
-        <mesh position={[-0.9, 0.515, 0]}>
-          <boxGeometry args={[1.34, 0.012, 0.86]} />
-          <meshStandardMaterial color="#c0a062" metalness={0.9} roughness={0.3} envMapIntensity={1.2} />
-        </mesh>
-      )}
-      {p.cooktop === "grill" && (
-        <mesh position={[-0.62, 0.53, 0]} castShadow>
-          <boxGeometry args={[0.5, 0.04, 0.62]} />
-          <meshStandardMaterial color="#34342f" metalness={0.65} roughness={0.5} />
-        </mesh>
-      )}
+      {/* ── Cooktop (style varies by grade) ────────────────── */}
+      <Cooktop type={p.cooktop} grade={p.cooktopGrade} brass={p.hardwareBrass} />
 
       {/* ── Sink + faucet ──────────────────────────────────── */}
       <mesh position={[0.25, 0.49, 0.0]}>
@@ -355,29 +407,30 @@ export default function CartModel({ params: p, mode }: { params: CartParams; mod
       <Wheel z={wheelZ} y={wheelY} radius={wheelR} knobby={false} />
       <Wheel z={-wheelZ} y={wheelY} radius={wheelR} knobby={false} />
 
-      {/* hydraulic legs at the four corners */}
-      {([
-        [1.45, 0.4],
-        [1.45, -0.4],
-        [-1.45, 0.4],
-        [-1.45, -0.4],
-      ] as const).map(([x, z]) => (
-        <Leg key={`${x}-${z}`} x={x} z={z} topLocal={-0.5} extended={mode === "parked"} brass={p.hardwareBrass} />
-      ))}
+      {/* Three hydraulic legs: two at the rear corners, one centered on the hitch end */}
+      <Leg x={1.5} z={0.42} topLocal={-0.5} extended={mode === "parked"} brass={p.hardwareBrass} />
+      <Leg x={1.5} z={-0.42} topLocal={-0.5} extended={mode === "parked"} brass={p.hardwareBrass} />
+      <Leg x={-1.5} z={0} topLocal={-0.5} extended={mode === "parked"} brass={p.hardwareBrass} />
 
-      {/* tongue + hitch (travel only) — tows lengthwise out the short end */}
-      {mode === "travel" && (
-        <group>
-          <mesh position={[-1.95, wheelY, 0]} castShadow>
-            <boxGeometry args={[1.0, 0.07, 0.1]} />
+      {/* Hitch coupler on the single-leg end — always visible (attaches to a vehicle) */}
+      <group>
+        {/* A-frame drawbars converging to the coupler */}
+        {[0.28, -0.28].map((z) => (
+          <mesh key={z} position={[-1.95, wheelY, z / 2]} rotation={[0, z > 0 ? 0.28 : -0.28, 0]} castShadow>
+            <boxGeometry args={[1.0, 0.07, 0.08]} />
             <meshStandardMaterial color={FRAME} metalness={0.5} roughness={0.6} />
           </mesh>
-          <mesh position={[-2.45, wheelY, 0]} castShadow>
-            <sphereGeometry args={[0.06, 16, 16]} />
-            <meshStandardMaterial color={STEEL} metalness={0.85} roughness={0.35} envMapIntensity={1.1} />
-          </mesh>
-        </group>
-      )}
+        ))}
+        {/* coupler head */}
+        <mesh position={[-2.42, wheelY, 0]} castShadow>
+          <boxGeometry args={[0.16, 0.12, 0.12]} />
+          <meshStandardMaterial color={STEEL} metalness={0.85} roughness={0.35} envMapIntensity={1.1} />
+        </mesh>
+        <mesh position={[-2.5, wheelY - 0.05, 0]} castShadow>
+          <sphereGeometry args={[0.055, 16, 16]} />
+          <meshStandardMaterial color="#1c1c1a" metalness={0.7} roughness={0.45} />
+        </mesh>
+      </group>
     </group>
   );
 }

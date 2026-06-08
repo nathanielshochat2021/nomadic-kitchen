@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import dynamic from "next/dynamic";
+import { AnimatePresence, motion } from "motion/react";
 import type { ViewMode } from "@/components/three/CartModel";
 import { useBuild } from "@/components/BuildProvider";
 import {
@@ -11,6 +12,7 @@ import {
   GROUPS,
   PRESETS,
   summaryLines,
+  type ConfigOption,
 } from "@/lib/configurator";
 import { cartParams, WOOD_LOOK, FINISH_LOOK } from "@/lib/cart3d";
 import AnimatedPrice from "@/components/motion/AnimatedPrice";
@@ -49,12 +51,31 @@ export default function Configurator() {
   } = useBuild();
 
   const [mode, setMode] = useState<ViewMode>("parked");
+  const [openGroup, setOpenGroup] = useState<string>(GROUPS[0].id);
   const params = useMemo(() => cartParams(selection, tiers, engraving), [selection, tiers, engraving]);
   const lines = summaryLines(selection, tiers);
   const addOnCount = lines.filter((l) => l.price > 0).length;
 
+  // Short summary of a group's current selection, shown in the accordion header.
+  const summarize = (groupId: string): string => {
+    const sel = (selection[groupId] ?? []).map((id) => getOption(id)).filter(Boolean) as ConfigOption[];
+    if (groupId === "personalization") {
+      const parts = sel.map((o) => o.label);
+      if (engraving.trim()) parts.push(`“${engraving.trim()}”`);
+      return parts.length ? parts.join(", ") : "None";
+    }
+    if (!sel.length) return "None";
+    return sel
+      .map((o) => {
+        const t = o.tiers?.find((x) => x.id === tierFor(o.id));
+        const up = t && o.tiers && o.tiers[0].id !== t.id ? ` · ${t.label}` : "";
+        return `${o.label}${up}`;
+      })
+      .join(", ");
+  };
+
   return (
-    <section id="configurator" className="relative overflow-hidden bg-forest-deep py-24 text-paper sm:py-32">
+    <section id="configurator" className="relative bg-forest-deep py-24 text-paper sm:py-32">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(100%_60%_at_50%_0%,rgba(210,98,46,0.12),transparent)]" />
       <div className="relative mx-auto max-w-7xl px-5 sm:px-8">
         <Reveal>
@@ -94,10 +115,10 @@ export default function Configurator() {
           </button>
         </div>
 
-        <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
-          {/* ── 3D viewer (sticky) ─────────────────────────── */}
-          <div className="lg:sticky lg:top-24 lg:self-start">
-            <div className="relative h-[400px] overflow-hidden rounded-3xl border border-white/10 bg-[radial-gradient(120%_120%_at_50%_15%,#2b362b,#161c16_70%)] sm:h-[500px] lg:h-[560px]">
+        <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:gap-8">
+          {/* ── 3D viewer (sticky on every screen size) ────── */}
+          <div className="sticky top-[4.5rem] z-20 self-start lg:top-24">
+            <div className="relative h-[320px] overflow-hidden rounded-3xl border border-white/10 bg-[radial-gradient(120%_120%_at_50%_15%,#2b362b,#161c16_70%)] sm:h-[440px] lg:h-[560px]">
               <CartViewer params={params} mode={mode} />
               <div className="pointer-events-none absolute inset-0">
                 <div className="absolute left-4 top-4 flex items-center gap-2 rounded-full bg-night/50 px-3 py-1.5 backdrop-blur-sm">
@@ -143,19 +164,48 @@ export default function Configurator() {
             </div>
           </div>
 
-          {/* ── Option groups ──────────────────────────────── */}
-          <div className="space-y-8">
+          {/* ── Option groups (accordion) ──────────────────── */}
+          <div className="space-y-3">
             {GROUPS.map((group) => {
               const selectedInGroup = (selection[group.id] ?? []).map((id) => getOption(id)).filter(Boolean);
               const tierable = selectedInGroup.find((o) => o!.tiers && o!.tiers.length);
+              const isOpen = openGroup === group.id;
               return (
-                <fieldset key={group.id}>
-                  <div className="flex items-baseline justify-between border-b border-white/10 pb-2">
-                    <legend className="font-display text-xl text-paper">{group.name}</legend>
-                    <Stamp className="text-paper/40">{group.type === "single" ? "Pick one" : "Pick any"}</Stamp>
-                  </div>
+                <div key={group.id} className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02]">
+                  <button
+                    type="button"
+                    aria-expanded={isOpen}
+                    onClick={() => setOpenGroup(isOpen ? "" : group.id)}
+                    className="flex w-full items-center gap-3 px-4 py-3.5 text-left transition-colors hover:bg-white/[0.03]"
+                  >
+                    <span className="min-w-0 flex-1">
+                      <span className="font-display text-lg text-paper">{group.name}</span>
+                      <span className="mt-0.5 block truncate text-xs text-paper/55">{summarize(group.id)}</span>
+                    </span>
+                    <span className="shrink-0 text-xs text-paper/40">{group.type === "single" ? "Pick one" : "Pick any"}</span>
+                    <svg
+                      viewBox="0 0 12 12"
+                      className={`h-3.5 w-3.5 shrink-0 text-paper/60 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`}
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.6"
+                      aria-hidden
+                    >
+                      <path d="M2.5 4.5 6 8l3.5-3.5" />
+                    </svg>
+                  </button>
 
-                  <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
+                  <AnimatePresence initial={false}>
+                    {isOpen && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                        className="overflow-hidden"
+                      >
+                        <div className="px-4 pb-4">
+                  <div className="grid gap-2.5 sm:grid-cols-2">
                     {group.options.map((opt) => {
                       const active = isSelected(group.id, opt.id);
                       const swatch = swatchFor(group.id, opt.id);
@@ -248,7 +298,11 @@ export default function Configurator() {
                       </p>
                     </div>
                   )}
-                </fieldset>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               );
             })}
 
