@@ -63,9 +63,9 @@ const TWO_TIERS = (premium: number): Tier[] => [
 
 // Cooktop appliance grades (applied to every burner layout)
 const COOKTOP_TIERS: Tier[] = [
-  { id: "std", label: "Hibachi-style", price: 0, description: "Cast-iron hibachi grill top — rugged and simple." },
-  { id: "prem", label: "Premium gas", price: 600, description: "Stainless gas burners with continuous grates." },
-  { id: "pro", label: "Viking-class", price: 1800, description: "Pro stainless rangetop, heavy continuous cast-iron grates." },
+  { id: "std", label: "Hibachi flat-top", price: 0, description: "Flat cast-steel griddle surface — sear, smash-burgers, teppanyaki. Simple and rugged." },
+  { id: "prem", label: "Gas burners", price: 600, description: "Open stainless gas burners on cast grates — fast, high heat, pots and pans." },
+  { id: "pro", label: "Pro rangetop", price: 1800, description: "Pro-grade rangetop: sealed burners in a continuous heavy grate, premium fit and BTU." },
 ];
 
 export const GROUPS: ConfigGroup[] = [

@@ -274,6 +274,13 @@ export default function Configurator() {
                           );
                         })}
                       </div>
+                      {/* Explain what the selected grade actually is */}
+                      {(() => {
+                        const active = tierable.tiers!.find((t) => t.id === tierFor(tierable!.id));
+                        return active?.description ? (
+                          <p className="mt-2.5 text-xs leading-relaxed text-paper/65">{active.description}</p>
+                        ) : null;
+                      })()}
                     </div>
                   )}
 

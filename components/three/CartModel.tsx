@@ -69,96 +69,118 @@ function Handle({ x, y, z, brass }: { x: number; y: number; z: number; brass: bo
   );
 }
 
-function Burner({ x, z, center }: { x: number; z: number; center: string }) {
+/** A single gas burner: cast-iron pan-support ring with cross-grate and a center cap. */
+function GasBurner({ x, z, capColor = "#1d1d1a" }: { x: number; z: number; capColor?: string }) {
   return (
-    <group position={[x, 0.52, z]}>
-      <mesh castShadow>
-        <cylinderGeometry args={[0.13, 0.13, 0.02, 24]} />
-        <meshStandardMaterial color={DARK} metalness={0.6} roughness={0.5} />
+    <group position={[x, 0.525, z]}>
+      {/* recessed well */}
+      <mesh position={[0, -0.01, 0]}>
+        <cylinderGeometry args={[0.135, 0.135, 0.015, 28]} />
+        <meshStandardMaterial color="#202022" metalness={0.6} roughness={0.5} />
       </mesh>
+      {/* cast pan-support ring */}
+      <mesh castShadow>
+        <torusGeometry args={[0.125, 0.018, 10, 28]} />
+        <meshStandardMaterial color="#161618" metalness={0.45} roughness={0.6} />
+      </mesh>
+      {/* cross supports */}
+      {[0, Math.PI / 2, Math.PI / 4, -Math.PI / 4].map((r) => (
+        <mesh key={r} rotation={[0, r, 0]} position={[0, 0.005, 0]}>
+          <boxGeometry args={[0.25, 0.016, 0.022]} />
+          <meshStandardMaterial color="#161618" metalness={0.45} roughness={0.6} />
+        </mesh>
+      ))}
+      {/* burner cap */}
       <mesh position={[0, 0.012, 0]}>
-        <cylinderGeometry args={[0.07, 0.07, 0.02, 18]} />
-        <meshStandardMaterial color={center} metalness={0.8} roughness={0.34} envMapIntensity={1.2} />
+        <cylinderGeometry args={[0.06, 0.07, 0.03, 20]} />
+        <meshStandardMaterial color={capColor} metalness={0.7} roughness={0.4} envMapIntensity={1.1} />
       </mesh>
     </group>
   );
 }
 
-/** Cooktop surface — style changes with grade: hibachi (std) / gas (prem) / Viking-class (pro). */
+// Burner layouts: a row for premium, a tight square cluster for pro.
+function rowLayout(n: number, cx: number): [number, number][] {
+  const gap = 0.32;
+  return Array.from({ length: n }, (_, i) => [cx + (i - (n - 1) / 2) * gap, 0]);
+}
+function squareLayout(n: number, cx: number): [number, number][] {
+  const rows = Math.ceil(n / 2);
+  return Array.from({ length: n }, (_, i) => {
+    const col = i % 2;
+    const row = Math.floor(i / 2);
+    return [cx + (col - 0.5) * 0.46, (row - (rows - 1) / 2) * 0.38];
+  });
+}
+
+/** Cooktop surface — flat-top (std) / gas burners in a row (prem) / pro rangetop, burners in a square (pro). */
 function Cooktop({ type, grade, brass }: { type: CooktopKind; grade: Grade; brass: boolean }) {
   const cx = -0.9;
-  const zoneXs =
-    type === "pro" ? [-1.46, -1.12, -0.78, -0.44] : type === "grill" ? [-1.42, -1.06] : [-1.42, -0.9, -0.38];
+  const count = type === "pro" ? 4 : type === "grill" ? 2 : 3;
   const knobColor = brass ? "#c0a062" : "#2b2b2b";
+  const knobXs = Array.from({ length: count }, (_, i) => cx + (i - (count - 1) / 2) * 0.26);
 
   return (
     <group>
-      {/* base tray */}
+      {/* stainless surround / tray */}
       <mesh position={[cx, 0.5, 0]} receiveShadow castShadow>
         <boxGeometry args={[1.34, 0.05, 0.84]} />
-        <meshStandardMaterial
-          color={grade === "std" ? "#2b2b28" : STEEL}
-          metalness={grade === "std" ? 0.4 : 0.85}
-          roughness={grade === "std" ? 0.6 : 0.3}
-          envMapIntensity={1.1}
-        />
+        <meshStandardMaterial color={STEEL} metalness={0.88} roughness={0.28} envMapIntensity={1.2} />
       </mesh>
 
-      {/* Standard = hibachi grill top: dark firebox + parallel grate bars */}
+      {/* STD — flat griddle / plancha top */}
       {grade === "std" && (
         <group>
-          <mesh position={[cx, 0.5, 0]}>
-            <boxGeometry args={[1.22, 0.06, 0.72]} />
-            <meshStandardMaterial color="#15140f" roughness={0.85} metalness={0.2} />
+          <mesh position={[cx, 0.535, 0]} castShadow receiveShadow>
+            <boxGeometry args={[1.22, 0.03, 0.72]} />
+            <meshStandardMaterial color="#73777b" metalness={0.72} roughness={0.42} envMapIntensity={1.1} />
           </mesh>
-          {[-0.3, -0.2, -0.1, 0, 0.1, 0.2, 0.3].map((z) => (
-            <mesh key={z} position={[cx, 0.55, z]} castShadow>
-              <boxGeometry args={[1.18, 0.025, 0.025]} />
-              <meshStandardMaterial color="#1d1d1a" metalness={0.4} roughness={0.7} />
-            </mesh>
-          ))}
+          {/* grease channel groove along the front */}
+          <mesh position={[cx, 0.552, 0.31]}>
+            <boxGeometry args={[1.18, 0.012, 0.04]} />
+            <meshStandardMaterial color="#34373a" metalness={0.5} roughness={0.6} />
+          </mesh>
         </group>
       )}
 
-      {/* Premium = open stainless gas burners */}
-      {grade === "prem" && zoneXs.map((x) => <Burner key={x} x={x} z={0} center="#9aa0a4" />)}
+      {/* PREM — open gas burners in a row */}
+      {grade === "prem" &&
+        rowLayout(count, cx).map(([x, z], i) => <GasBurner key={i} x={x} z={z} capColor="#3a3d40" />)}
 
-      {/* Pro / Viking-class = continuous heavy cast-iron grate grid + polished stainless trim */}
+      {/* PRO — polished rangetop, sealed burners in a square + continuous grate frame */}
       {grade === "pro" && (
         <group>
-          <mesh position={[cx, 0.53, 0]}>
-            <boxGeometry args={[1.4, 0.02, 0.9]} />
-            <meshStandardMaterial color="#d6d9dc" metalness={0.95} roughness={0.18} envMapIntensity={1.3} />
+          <mesh position={[cx, 0.522, 0]}>
+            <boxGeometry args={[1.24, 0.018, 0.78]} />
+            <meshStandardMaterial color="#d7dadd" metalness={0.96} roughness={0.16} envMapIntensity={1.4} />
           </mesh>
-          {[-0.3, -0.12, 0.06, 0.24].map((z) => (
-            <mesh key={`gx${z}`} position={[cx, 0.56, z]} castShadow>
-              <boxGeometry args={[1.26, 0.035, 0.035]} />
-              <meshStandardMaterial color="#17181a" metalness={0.5} roughness={0.55} />
+          {/* perimeter continuous grate rails */}
+          {[0.3, -0.3].map((z) => (
+            <mesh key={`gx${z}`} position={[cx, 0.555, z]} castShadow>
+              <boxGeometry args={[1.2, 0.03, 0.03]} />
+              <meshStandardMaterial color="#17181a" metalness={0.4} roughness={0.6} />
             </mesh>
           ))}
-          {[-1.45, -1.15, -0.85, -0.55, -0.35].map((x) => (
-            <mesh key={`gz${x}`} position={[x, 0.56, -0.03]} castShadow>
-              <boxGeometry args={[0.035, 0.035, 0.74]} />
-              <meshStandardMaterial color="#17181a" metalness={0.5} roughness={0.55} />
-            </mesh>
+          {squareLayout(count, cx).map(([x, z], i) => (
+            <GasBurner key={i} x={x} z={z} capColor="#1d1d1a" />
           ))}
         </group>
       )}
 
-      {/* Griddle (grill format) */}
+      {/* Griddle station (burner + griddle format) */}
       {type === "grill" && (
-        <mesh position={[-0.55, 0.54, 0]} castShadow>
-          <boxGeometry args={[0.5, 0.035, 0.66]} />
-          <meshStandardMaterial color="#3a3a34" metalness={0.55} roughness={0.5} />
+        <mesh position={[-0.5, 0.535, 0]} castShadow>
+          <boxGeometry args={[0.48, 0.03, 0.66]} />
+          <meshStandardMaterial color="#55585c" metalness={0.7} roughness={0.4} envMapIntensity={1.1} />
         </mesh>
       )}
 
-      {/* Control knobs on the front face (premium + pro) */}
+      {/* Control knobs on the front fascia (gas + pro) */}
       {grade !== "std" &&
-        zoneXs.map((x) => (
-          <group key={`k${x}`} position={[x, 0.45, 0.52]} rotation={[Math.PI / 2, 0, 0]}>
+        knobXs.map((x, i) => (
+          <group key={i} position={[x, 0.45, 0.521]} rotation={[Math.PI / 2, 0, 0]}>
             <mesh castShadow>
-              <cylinderGeometry args={[0.035, 0.04, 0.05, 16]} />
+              <cylinderGeometry args={[0.032, 0.038, 0.05, 18]} />
               <meshStandardMaterial color={knobColor} metalness={0.85} roughness={0.35} envMapIntensity={1.1} />
             </mesh>
           </group>
@@ -213,17 +235,15 @@ export default function CartModel({ params: p, mode }: { params: CartParams; mod
     () => ({
       color: p.woodHex,
       roughness: p.finishRoughness,
-      clearcoat: p.finishClearcoat,
-      clearcoatRoughness: 0.5,
-      envMapIntensity: 0.5,
+      metalness: 0,
+      envMapIntensity: 0.6,
     }),
-    [p.woodHex, p.finishRoughness, p.finishClearcoat]
+    [p.woodHex, p.finishRoughness]
   );
 
-  // Re-create the wood material whenever the finish changes. Toggling clearcoat
-  // between 0 (matte) and >0 (oil/stain) needs a fresh material, otherwise
-  // three.js keeps the old shader and the cabinet renders broken/invisible.
-  const woodKey = `${p.woodHex}-${p.finishClearcoat}-${p.finishRoughness}`;
+  // Finish is conveyed by color + roughness on a standard material (no clearcoat) —
+  // toggling clearcoat 0 -> >0 is what made the cabinet vanish.
+  const woodKey = `${p.woodHex}-${p.finishRoughness}`;
 
   const wheelR = 0.34;
   const baseY = mode === "parked" ? 0.14 : 0;
@@ -236,7 +256,7 @@ export default function CartModel({ params: p, mode }: { params: CartParams; mod
     <group position={[0, baseY, 0]}>
       {/* ── Cabinet body ───────────────────────────────────── */}
       <RoundedBox args={[3.2, 0.95, 1.0]} radius={0.04} smoothness={4} castShadow receiveShadow>
-        <meshPhysicalMaterial key={woodKey} {...woodProps} />
+        <meshStandardMaterial key={woodKey} {...woodProps} />
       </RoundedBox>
 
       {[-0.28, 0, 0.28].map((y) => (
@@ -253,7 +273,7 @@ export default function CartModel({ params: p, mode }: { params: CartParams; mod
 
       <mesh position={[0, -0.42, 0.18]} castShadow>
         <boxGeometry args={[2.9, 0.04, 0.5]} />
-        <meshPhysicalMaterial key={woodKey} {...woodProps} />
+        <meshStandardMaterial key={woodKey} {...woodProps} />
       </mesh>
 
       {/* ── Cooktop (style varies by grade) ────────────────── */}
@@ -301,7 +321,7 @@ export default function CartModel({ params: p, mode }: { params: CartParams; mod
           <group key={`dr-${y}`}>
             <mesh position={[-0.25, y, 0.5]} castShadow>
               <boxGeometry args={[0.62, 0.25, 0.03]} />
-              <meshPhysicalMaterial key={woodKey} {...woodProps} />
+              <meshStandardMaterial key={woodKey} {...woodProps} />
             </mesh>
             <Handle x={-0.25} y={y + 0.08} z={0.53} brass={p.hardwareBrass} />
           </group>
